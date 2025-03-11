@@ -1,8 +1,14 @@
 .avatarImg {
     animation: fadeIn 0.5s ease-in;
 }
+
 .passwordChangingBox {
     animation: fadeIn 0.3s ease-in-out;
+}
+
+.userDetailBox {
+    background-image: url('../../assets/marvel10.jpg');
+    background-position: center;
 }
 
 @keyframes fadeIn {
@@ -10,6 +16,7 @@
         transform: scale(0);
         opacity: 0.2;
     }
+
     100% {
         transform: scale(1);
         opacity: 1;

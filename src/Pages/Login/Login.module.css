@@ -61,14 +61,34 @@
     }
 }
 
-.emailInput:not(:placeholder-shown)+.emailLabel,
-.emailInput:focus+.emailLabel {
-    top: -7px;
-    padding: 0 4px
+.typingText {
+    font-size: 130%;
+    font-weight: bold;
+    background: linear-gradient(45deg, #ff6b6b, #feca57, #48dbfb, #5f27cd);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
-.passwordInput:not(:placeholder-shown)+.passwordLabel,
-.passwordInput:focus+.passwordLabel {
-    top: -7px;
-    padding: 0 4px
+.caretElement {
+    display: inline-block;
+    margin: 0px 3px;
+    width: 2px;
+    height: 25px;
+    background-color: white;
+    transform: translateY(3px);
+    animation: blink 0.6s linear infinite;
+}
+
+@keyframes blink {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
 }

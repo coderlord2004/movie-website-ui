@@ -14,6 +14,7 @@ function Login() {
     const passwordInput = useRef(null)
     const passwordLabel = useRef(null)
     const formLoginBox = useRef(null)
+    const typingText = useRef(null)
     const [loading, setLoading] = useState()
     const navigate = useNavigate()
     const { showNotification } = useNotification()
@@ -70,15 +71,37 @@ function Login() {
         }, 300)
     }
 
+    useEffect(() => {
+        const text = "Welcome to our website! Please login to continue... <3";
+        let index = 0;
+        const typeEffect = () => {
+            if (!typingText.current)
+                return
+
+            typingText.current.innerHTML = text.slice(0, index) + `<span class='${styles.caretElement}'></span>`;
+            index++;
+            if (index <= text.length) {
+                setTimeout(typeEffect, 70);
+            } else {
+                typingText.current.style.borderRight = "none";
+            }
+        }
+        typeEffect();
+    }, [])
+
     return (
         <div className={styles.entireLoginPage + " w-full h-screen flex justify-center items-center text-white"}>
             <div
                 ref={formLoginBox}
-                className={styles.formLoginBox + " w-[300px] h-auto bg-black/70 rounded-[10px] p-3 absolute top-[50%] left-[50%] transform translate-x-[-50%] translate-y-[-50%] border-[1px] border-solid border-white"}
+                className={styles.formLoginBox + " w-auto h-auto bg-black/70 rounded-[10px] p-3 absolute top-[50%] left-[50%] transform translate-x-[-50%] translate-y-[-50%] border-[1px] border-solid border-white flex justify-center"}
                 onClick={addWaveAnimation}
             >
-                <h1 className="text-center text-[140%] font-bold">Login</h1>
-                <form onSubmit={handleLogin}>
+                <div className="min-w-[300px] flex justify-center relative mt-[40px]">
+                    <p className={styles.typingText + " max-w-[200px] h-auto text-center relative p-0"} ref={typingText}>
+                    </p>
+
+                </div>
+                <form onSubmit={handleLogin} className="min-w-[250px] h-auto border-[1px] border-solid border-white rounded-[10px] p-[5px]">
                     <InputBox id="emailInput" type={"text"} label={"Nhập email:"} refName={emailInput} />
                     <InputBox id="passwordInput" type={"password"} label={"Nhập password:"} refName={passwordInput} />
                     <div className="mx-1 mt-[5px]">

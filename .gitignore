@@ -22,3 +22,5 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+echo "src/movie-website-3a8c0-firebase-adminsdk-fbsvc-3b741459f8.json" >> .gitignore

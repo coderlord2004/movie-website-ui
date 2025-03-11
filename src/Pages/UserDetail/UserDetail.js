@@ -135,10 +135,13 @@ const UserDetail = () => {
 
   return (
     <div className="w-auto h-screen flex text-white relative box-border">
-      <Header />
+      <Header
+        onSearching={() => { }}
+        onReset={() => { }}
+      />
       <SideBar onActiveMenuUpdate={() => { }} />
-      <div className="w-[80%] h-[300px] border-[2px] border-solid border-[red] rounded-[8px] flex ml-[20%] mt-[50px]">
-        <div className="avatar-box w-[50%] h-[100%] flex flex-col items-center justify-center relative">
+      <div className={styles.userDetailBox + " w-[80%] h-[300px] border-[2px] border-solid border-[red] rounded-[8px] flex ml-[20%] mt-[50px]"}>
+        <div className={styles.avatarBox + " avatar-box w-[50%] h-[100%] flex flex-col items-center justify-center relative bg-black/50"}>
           {user ? <img
             className={styles.avatarImg + " w-[80%] h-[80%] rounded-[50%]"}
             src={image ? image : `data:image/png;base64,${user.avatarData}`}
@@ -149,7 +152,7 @@ const UserDetail = () => {
           />}
           <p className="text-[130%]">{user ? user.username : ''}</p>
         </div>
-        <div className="w-[50%] h-[100%] p-[5px] flex flex-col justify-center items-start border-l-[3px] border-white border-dashed">
+        <div className="w-[50%] h-[100%] p-[5px] flex flex-col justify-center items-center bg-black/50">
           <p><b>Username:</b> {user ? user.username : ''}</p>
           <p><b>Email:</b> {user ? user.email : ''}</p>
           <p><b>Account Creating Time:</b> {user ? user.accountCreatingTime : ''}</p>
@@ -159,7 +162,7 @@ const UserDetail = () => {
           <Link to="/home">Home</Link>
         </div>
       </div>
-      {passwordChangingBox ? <div className={styles.passwordChangingBox + " absolute top-0 right-0 left-0 bottom-0 flex justify-center items-center overflow-hidden"}>
+      {passwordChangingBox ? <div className={styles.passwordChangingBox + " fixed top-0 right-0 left-0 bottom-0 flex justify-center items-center overflow-hidden z-[1000]"}>
         <div
           className="overlay absolute top-0 right-0 left-0 bottom-0 bg-[rgba(100,116,139,0.5)] z-0 cursor-pointer"
           onClick={() => {

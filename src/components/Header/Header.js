@@ -98,6 +98,7 @@ function Header({ onSearching, onReset, additionalHeaderStyles }) {
                     onBlur={(e) => {
                         if (e.target.value === '') {
                             onReset()
+                            animateOnBlur()
                         } else {
                             onSearching(e.target.value)
                         }
@@ -107,8 +108,8 @@ function Header({ onSearching, onReset, additionalHeaderStyles }) {
                             onSearching(searchInput.current.value)
                     }}
                 />
-                <label ref={searchLabel} htmlFor="search-input" className="hidden md:block absolute left-[7px]">Search...</label>
-                <label htmlFor="search-input" className="w-[18px] ml-[5px] cursor-pointer md:absolute right-[7px]">
+                <label ref={searchLabel} htmlFor="search-input" className="absolute left-[7px]">Search...</label>
+                <label htmlFor="search-input" className="w-[18px] ml-[5px] cursor-pointer">
                     <img
                         ref={searchImg}
                         src="https://img.icons8.com/dusk/64/search--v1.png"

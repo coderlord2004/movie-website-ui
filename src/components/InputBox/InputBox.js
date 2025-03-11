@@ -10,12 +10,13 @@ function InputBox({ id, type, label, refName }) {
                 id={id}
                 ref={refName}
                 type={!showPassword ? type : "text"}
-                className={`w-full h-[35px] text-black outline-none p-1 px-3 cursor-pointer `}
+                className={styles.inputElement + ` w-full h-[35px] text-black outline-none p-1 px-3 cursor-pointer `}
                 placeholder=" "
                 required
             />
             <label
-                htmlFor={id} className={`text-black absolute top-[50%] left-[11px] transform translate-y-[-50%] transition-all duration-150 ease-linear bg-white cursor-pointer`}
+                htmlFor={id} 
+                className={styles.labelElement + ` text-black absolute top-[50%] left-[11px] transform translate-y-[-50%] transition-all duration-150 ease-linear bg-white cursor-pointer`}
             >
                 {label}
             </label>
