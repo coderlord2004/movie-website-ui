@@ -1,5 +1,4 @@
 import React from 'react'
-import styles from './SpinAnimation.module.css'
 
 function SpinAnimation({ onLoading, additionalStyles }) {
   return (
@@ -12,7 +11,7 @@ function SpinAnimation({ onLoading, additionalStyles }) {
       } : {
         display: "none"
       }}
-      className={`w-[30px] h-[30px] flex justify-center items-center rounded-[50%] absolute left-[45%] transform translate-x-[-50%] ` + styles.spinAnimation}
+      className="w-[30px] h-[30px] flex justify-center items-center rounded-[50%] absolute left-[50%] transform translate-x-[-50%] animate-spinner"
     >
     </div>
   )

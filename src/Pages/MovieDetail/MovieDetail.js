@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import styles from './MovieDetail.module.css'
 import { Link, useParams, useNavigate } from 'react-router-dom'
-import { useNotification } from '../../context/NotificationContext/NotificationContext'
+import { useNotification } from '../../context/NotificationContext.js'
 import TextOverflow from '../../components/TextOverflow/TextOverflow'
 import Header from '../../components/Header/Header'
 import SpecialVideo from '../../components/Video/SpecialVideo/SpecialVideo.js'
@@ -39,8 +39,8 @@ function MovieDetail() {
             ])
             console.log('results: ', results);
             localStorage.setItem('movieVideos', JSON.stringify(results[1].value.results))
-            setMovieData({ 
-                movieDetail: results[0].value, 
+            setMovieData({
+                movieDetail: results[0].value,
                 movieVideos: results[1].value.results,
                 movieReviews: results[2].value.results
             })
@@ -54,15 +54,15 @@ function MovieDetail() {
             if (results[2].status === "rejected") {
                 showNotification("error", "Getting movie reviews is errored!");
             }
-        } 
+        }
         fetchMovieDetail()
     }, [])
 
     useEffect(() => {
         //https://api.rophim.tv/v1/movie/filterV2?countries=&genres=&years=&type=&status=&versions=&rating=&networks=&productions=&sort=release_date&page=1&keyword=the%20gorge
-        
+
         //https://www.rophim.tv/xem-phim/mufasa-vua-su-tu.o2HG68kO?_rsc=16qtr
-        
+
         // fetch('https://www.rophim.tv/tim-kiem?q=the%20gorge')
     }, [])
 
@@ -89,14 +89,14 @@ function MovieDetail() {
     return (
         <div className={styles.entireMovieDetail + " w-full h-auto flex gap-x-[15px] p-[5px]"}>
             <Header />
-            <div 
+            <div
                 className={"w-[65%] h-auto mt-[50px] text-white transition-all duration-200 ease-linear bg-slate-800 flex flex-col justify-start items-start " + styles.movieIframeBox}
-                ref={movieIframeBox} 
+                ref={movieIframeBox}
             >
                 <div className={styles.movieImageBox + " w-full aspect-[16/9] mx-auto bg-black relative overflow-hidden rounded-[10px]"}>
                     {movieData.movieDetail ? (
                         <>
-                            <Image 
+                            <Image
                                 src={`${image_base_url}original/${movieData.movieDetail.backdrop_path}`}
                             />
                             <div className={styles.movieOverviewBox + " absolute top-[60%] left-[8%] shadow-[0_0_3px_3px_black] bg-black/60 rounded-[8px] p-[5px]"}>
@@ -127,7 +127,7 @@ function MovieDetail() {
                                     ))}
                                 </div>
                             </div>
-                            
+
                         </>
                     ) : ('')}
                 </div>
@@ -143,9 +143,9 @@ function MovieDetail() {
                         <h1 className="text-[120%] ml-[10px]">Top reviews</h1>
                         {movieData.movieReviews.map((review, index) => (
                             <div key={`review${index}`} className="flex p-[10px]">
-                                <div className={`rounded-[50%]  w-[40px] h-[40px] bg-[${randomAvatarColor[Math.floor(Math.random()*randomAvatarColor.length)]}] flex justify-center items-center mt-[5px]`}>
+                                <div className={`rounded-[50%]  w-[40px] h-[40px] bg-[${randomAvatarColor[Math.floor(Math.random() * randomAvatarColor.length)]}] flex justify-center items-center mt-[5px]`}>
                                     {review.author_details.avatar_path ? (
-                                        <img 
+                                        <img
                                             src={`${image_base_url}original/${review.author_details.avatar_path}`}
                                             className="w-full h-full rounded-[50%]"
                                         />
@@ -155,12 +155,12 @@ function MovieDetail() {
                                 </div>
                                 <div className="w-[calc(100%-50px)] pl-[10px]">
                                     <h2 className="text-[120%] text-[grey]">{review.author}</h2>
-                                    <TextOverflow content={review.content} useBy={"MovieDetail"}/>
+                                    <TextOverflow content={review.content} useBy={"MovieDetail"} />
                                 </div>
-                            </div>    
+                            </div>
                         ))}
                     </div>
-                ): ('')}
+                ) : ('')}
             </div>
             <div className={styles.trailersBox + " w-[32%] mt-[50px] h-screen flex flex-col gap-[5px]"}>
                 <h1 className="text-white text-center text-[150%]">Related trailers</h1>
@@ -168,13 +168,13 @@ function MovieDetail() {
                     ''
                 ) : (
                     movieData.movieVideos.map((video) => (
-                        <div 
-                            className="w-full flex cursor-pointer hover:transform hover:scale-[1.03] transition-all duration-200 ease-linear" 
+                        <div
+                            className="w-full flex cursor-pointer hover:transform hover:scale-[1.03] transition-all duration-200 ease-linear"
                             key={video.id}
                             onClick={() => navigate(`/watch/${video.key}`)}
                         >
                             <div className="w-[50%] aspect-[4/3]  relative border-[1px] border-solid border-white mr-[8px] rounded-[8px]">
-                                <Image id={video.id} src={`https://img.youtube.com/vi/${video.key}/default.jpg`}/>
+                                <Image id={video.id} src={`https://img.youtube.com/vi/${video.key}/default.jpg`} />
                                 <div className={styles.playIcon + ' absolute top-[50%] left-[50%] hover:bg-slate-300'}></div>
                             </div>
                             <div className="w-[40%]">

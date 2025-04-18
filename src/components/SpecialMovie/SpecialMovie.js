@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import styles from "./SpecialMovie.module.css";
 import BookMarkIcon from "../BookMarkIcon/BookMarkIcon";
 import HeartIcon from "../HeartIcon/HeartIcon";
 
@@ -15,10 +14,7 @@ function SpecialMovie({ id, movieImageUrl, movieData, type, typeDetail }) {
     >
       <div className={`relative overflow-hidden w-full h-full`}>
         <div
-          className={
-            styles.animationBox +
-            ` w-full h-full rounded-[10px] bg-slate-800 overflow-hidden flex justify-center items-center`
-          }
+          className="w-full h-full rounded-[10px] bg-slate-800 overflow-hidden flex justify-center items-center before:content-[''] before:block before:w-[70px] before:h-[160%] before:bg-black/30 before:transform before:rotate-[20deg] before:absolute animate-moveToRight"
         >
           <img
             src={movieImageUrl}

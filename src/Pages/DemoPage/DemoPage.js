@@ -5,7 +5,7 @@ import SpinAnimation from "../../components/LoadingAnimation/SpinAnimation/SpinA
 import TextOverflow from "../../components/TextOverflow/TextOverflow";
 import BookMarkIcon from "../../components/BookMarkIcon/BookMarkIcon.js";
 import HeartIcon from "../../components/HeartIcon/HeartIcon.js";
-import { useNotification } from "../../context/NotificationContext/NotificationContext.js";
+import { useNotification } from "../../context/NotificationContext.js";
 
 const api_key = process.env.REACT_APP_API_KEY;
 const access_token = process.env.REACT_APP_API_READ_ACCESS_TOKEN;
@@ -42,17 +42,6 @@ function DemoPage() {
             .then(data => {
                 console.log(data);
                 setTrendingList(data.results)
-            })
-            .catch(err => alert(err));
-    }, [])
-
-    useEffect(() => {
-        fetch('https://api.rophim.tv/v1/movie/filterV2?countries=&genres=QriAOn&years=&type=&status=&versions=&rating=&networks=&productions=&sort=updated_at&page=1')
-            .then(res => res.json())
-            .then(data => {
-                // console.log(data.result.items);
-                // console.log('images caknca: ', data.result.items[0].images.posters[1].path.split('/')[3])
-                // setTrendingList(data.result.items)
             })
             .catch(err => alert(err));
     }, [])

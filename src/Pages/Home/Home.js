@@ -8,9 +8,8 @@ import {
   fetchApiWithOptions,
   fetchApiWithParams,
 } from "../../services/api_service/FetchMoviesApi.js";
-import styles from "./Home.module.css";
 import { Link } from "react-router-dom";
-import { useNotification } from "../../context/NotificationContext/NotificationContext.js";
+import { useNotification } from "../../context/NotificationContext.js";
 import SpecialMovie from "../../components/SpecialMovie/SpecialMovie.js";
 import Movie from "../../components/Movie/Movie.js";
 import { sideBarMenu, cinemaMap } from "../../constants/menu.js";
@@ -39,7 +38,6 @@ function Home() {
     activeMenu: sideBarMenu[0],
     cinemaType: cinemaMap[sideBarMenu[0]][0],
   });
-  console.log("menuState.cinemaType = ", menuState.cinemaType);
   const movieListBox = useRef(null);
   const { showNotification } = useNotification();
   let initialMovie = useRef(null);
@@ -71,10 +69,6 @@ function Home() {
     if (menuState.activeMenu && menuState.cinemaType) fetchApi();
   }, [menuState, pageNumber]);
 
-  const handleLoading = () => {
-    setLoading(true);
-  };
-
   const handleSearching = (searchValue) => {
     if (searchValue === "") return;
     setLoading(true);
@@ -102,8 +96,6 @@ function Home() {
   };
 
   const resetMovies = () => {
-    console.log("initialMovie.current = ", initialMovie.current);
-    console.log("onblur ......");
     setMovies(initialMovie.current);
   };
 
@@ -178,20 +170,20 @@ function Home() {
           {!movies
             ? ""
             : movies.results
-                .slice(1)
-                .map((data, index) => (
-                  <Movie
-                    id={`movie${index + 1}`}
-                    movieImageUrl={`${image_base_url}/original/${data.poster_path}`}
-                    movieData={data}
-                    type={movies.type.toLowerCase().split(" ")[0]}
-                    typeDetail={
-                      menuState.cinemaType
-                        ? menuState.cinemaType.toLowerCase()
-                        : ""
-                    }
-                  />
-                ))}
+              .slice(1)
+              .map((data, index) => (
+                <Movie
+                  id={`movie${index + 1}`}
+                  movieImageUrl={`${image_base_url}/original/${data.poster_path}`}
+                  movieData={data}
+                  type={movies.type.toLowerCase().split(" ")[0]}
+                  typeDetail={
+                    menuState.cinemaType
+                      ? menuState.cinemaType.toLowerCase()
+                      : ""
+                  }
+                />
+              ))}
           <div className="page-transition w-full h-[30px] flex justify-center">
             <button
               title="Previous Page"

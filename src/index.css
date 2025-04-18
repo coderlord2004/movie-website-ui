@@ -52,8 +52,21 @@ code {
   cursor: grabbing;
 }
 
-
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --animate-spinner: spinner 0.5s ease infinite;
+  --breakpoint-sm: 400px;
+}
+
+@keyframes spinner {
+  0% {
+    transform: rotate(0);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}

@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '../../components/Header/Header';
+import { AdvancedImage } from '@cloudinary/react';
+import { Cloudinary } from "@cloudinary/url-gen";
 
+//https://api.cloudinary.com/v1_1/${cloudName}/upload
 function UploadFilm() {
     const [formData, setFormData] = useState({
         adult: false,
@@ -51,6 +54,36 @@ function UploadFilm() {
         console.log(formData);
     };
 
+    // Create a Cloudinary instance and set your cloud name.
+    const cld = new Cloudinary({
+        cloud: {
+            cloudName: 'dp1h9ryai'
+        }
+    });
+
+    // cld.image returns a CloudinaryImage with the configuration set.
+    const myImage = cld.image('images_knfdnm');
+
+    // The URL of the image is: https://res.cloudinary.com/dp1h9ryai/image/upload/sample
+
+    // Render the image in a React component.
+
+    useEffect(() => {
+
+    }, [])
+
+    const uploadImage = () => {
+        const form = new FormData()
+        form.append('file', formData.backdrop_path)
+        console.log('form = ', form);
+        fetch(`https://api.cloudinary.com/v1_1/dp1h9ryai/image/upload?api_key=787328811916441&upload_preset=unsigned_1`, {
+            method: "POST",
+            body: formData
+        })
+            .then(res => res.json())
+            .then(data => console.log('data: ', data))
+            .catch(err => console.log('err: ', err))
+    }
     return (
         <div className="w-auto h-auto">
             <Header
@@ -61,6 +94,7 @@ function UploadFilm() {
                 <h1 className="text-2xl font-bold mb-5 text-center">Upload Film</h1>
                 <form onSubmit={handleSubmit}>
                     <div className="mb-4">
+                        <AdvancedImage cldImg={myImage} />
                         <label className="block mb-2 cursor-pointer" htmlFor='adult'>
                             <input
                                 id="adult"
@@ -85,6 +119,7 @@ function UploadFilm() {
                         {previewImages.backdrop_path && (
                             <img src={previewImages.backdrop_path} alt="Backdrop Preview" className="mt-2 w-full h-auto rounded" />
                         )}
+                        <button onClick={uploadImage}>upload</button>
                     </div>
                     <div className="mb-4">
                         <label className="block mb-2">Poster Path</label>

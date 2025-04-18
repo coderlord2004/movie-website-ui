@@ -3,7 +3,7 @@ import decodeJWT from "../../utils/decodeJWT";
 import styles from './UserDetail.module.css'
 import { Link } from "react-router-dom";
 import SpinAnimation from "../../components/LoadingAnimation/SpinAnimation/SpinAnimation";
-import { useNotification } from "../../context/NotificationContext/NotificationContext";
+import { useNotification } from "../../context/NotificationContext.js";
 import Header from "../../components/Header/Header";
 import SideBar from "../../components/SideBar/SideBar";
 import Marvel1 from "../../assets/marvel1.jpg";

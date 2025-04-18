@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState, memo } from "react"
-import { useNotification } from "../../context/NotificationContext/NotificationContext"
+import { useNotification } from "../../context/NotificationContext.js"
 import styles from './SideBar.module.css'
 import { sideBarMenu, trendingMenu, movieMenu, tvshowMenu, cinemaMap, linkIcon } from '../../constants/menu'
 

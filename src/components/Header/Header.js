@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useContext, useEffect, useRef, useState } from 'react'
 import '../../index.css';
-import { AuthContext } from '../../context/UserDataContext';
+import { AuthContext } from '../../context/UserContext';
 import decodeJWT from '../../utils/decodeJWT';
 import styles from './Header.module.css';
 import logo from '../../assets/Logo.png';
@@ -13,17 +13,13 @@ function Header({ onSearching, onReset, additionalHeaderStyles }) {
     let searchLabel = useRef(null)
     let searchImg = useRef(null)
     let header = useRef(null)
-    const [avatar, setAvatar] = useState(null)
-    const jwtToken = JSON.parse(sessionStorage.getItem('evdToken'))
-    const decodedToken = jwtToken ? decodeJWT(jwtToken) : null
+    const [userInfo, setUserInfo] = useState(null)
     const animateOnFocus = () => {
-        console.log('on focus');
         searchLabel.current.style = 'display: none;'
         searchField.current.style = 'width: 20%;'
     }
     const animateOnBlur = () => {
         if (searchInput.current.value === '') {
-            console.log('on blur');
             searchField.current.style = 'width: 10%;'
             searchLabel.current.style = 'display: inline-block;'
         }
@@ -34,9 +30,7 @@ function Header({ onSearching, onReset, additionalHeaderStyles }) {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                'token': `${jwtToken}`
-            })
+            credentials: 'include'
         })
         if (!res.ok) {
             const errorData = await res.json()
@@ -47,13 +41,11 @@ function Header({ onSearching, onReset, additionalHeaderStyles }) {
         navigate('/')
     }
     useEffect(() => {
-        const fetchAvatar = async () => {
+        const fetchUserInfo = async () => {
             try {
-                const res = await fetch(`${process.env.REACT_APP_WEBSITE_BASE_URL}identity/api/users/${decodedToken.userId}/get-avatar`, {
+                const res = await fetch(`${process.env.REACT_APP_WEBSITE_BASE_URL}identity/users/my-info`, {
                     method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${jwtToken}`
-                    }
+                    credentials: 'include'
                 })
 
                 if (!res.ok) {
@@ -62,14 +54,13 @@ function Header({ onSearching, onReset, additionalHeaderStyles }) {
                 }
 
                 const data = await res.json()
-                setAvatar(data.result)
+                console.log('userInfo:', data.result);
+                setUserInfo(data.result)
             } catch (err) {
                 alert(err)
             }
         }
-        if (jwtToken) {
-            fetchAvatar()
-        }
+        fetchUserInfo()
     }, [])
     return (
         <header
@@ -118,14 +109,15 @@ function Header({ onSearching, onReset, additionalHeaderStyles }) {
                     />
                 </label>
             </div>
-            {jwtToken ? <div className={"w-auto h-full mr-[30px] flex justify-center items-center text-white relative  " + styles.userAvatar}>
-                {avatar ? <img width="30" height="30"
-                    src={`data:image/png;base64,${avatar}`} className="rounded-[50%]"
+            {userInfo ? <div className={"w-auto h-full mr-[30px] flex justify-center items-center text-white relative  " + styles.userInfo}>
+                {userInfo.avartarName ? <img width="30" height="30"
+                    src={`data:image/png;base64,${userInfo.avartarData}`} className="rounded-[50%]"
                 /> : <img width="30" height="30" src="https://img.icons8.com/material/30/person-male.png" alt="person-male" className="rounded-[50%] bg-white" />
                 }
-                <p className="ml-[5px]">{decodedToken.sub}</p>
-                <div className={styles.detailUserAvatar + " hidden w-[180px] h-auto p-2 flex flex-col items-start bg-white text-black rounded-[10px] absolute top-[100%] right-[-20px] hover:block border border-[2px] border-solid border-slate-500"}>
-                    <p className='hover:bg-[#0C8CE9] px-1 w-full text-left'>Username: {decodedToken.sub}</p>
+                <p className="ml-[5px]">{userInfo.username}</p>
+                <div className={styles.detailUser + " hidden w-[180px] h-auto p-2 flex flex-col items-start bg-white text-black rounded-[10px] absolute top-[100%] right-[-20px] hover:block border border-[2px] border-solid border-slate-500"}>
+                    <p className='hover:bg-[#0C8CE9] px-1 w-full text-left'>Username: {userInfo.username}</p>
+                    <p className='hover:bg-[#0C8CE9] px-1 w-full text-left'>Email: {userInfo.email}</p>
                     <Link to="/myinfo" className='hover:bg-[#0C8CE9] px-1 w-full text-left'>Account detail</Link>
                     <button className='hover:bg-[#0C8CE9] px-1 w-full text-left' onClick={handleLogout}>Log out</button>
                 </div>

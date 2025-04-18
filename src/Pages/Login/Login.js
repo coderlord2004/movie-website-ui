@@ -1,82 +1,78 @@
-import { useContext, useEffect, useRef, useState } from "react"
-import styles from './Login.module.css'
-import googleIcon from '../../assets/google.png'
+import { useEffect, useRef, useState } from "react";
+import styles from './Login.module.css';
+import googleIcon from '../../assets/google.png';
 import { Link, useNavigate } from "react-router-dom";
-import SpinAnimation from '../../components/LoadingAnimation/SpinAnimation/SpinAnimation'
-import { useNotification } from "../../context/NotificationContext/NotificationContext";
+import SpinAnimation from '../../components/LoadingAnimation/SpinAnimation/SpinAnimation';
+import { useNotification } from "../../context/NotificationContext.js";
 import InputBox from "../../components/InputBox/InputBox";
+import { useForm } from 'react-hook-form';
 
-const website_base_url = process.env.REACT_APP_WEBSITE_BASE_URL
+const website_base_url = process.env.REACT_APP_WEBSITE_BASE_URL;
 
 function Login() {
-    const emailInput = useRef(null)
-    const emailLabel = useRef(null)
-    const passwordInput = useRef(null)
-    const passwordLabel = useRef(null)
-    const formLoginBox = useRef(null)
-    const typingText = useRef(null)
-    const [loading, setLoading] = useState()
-    const navigate = useNavigate()
-    const { showNotification } = useNotification()
-    let waveElement = null
+    const emailInput = useRef(null);
+    const passwordInput = useRef(null);
+    const formLoginBox = useRef(null);
+    const typingText = useRef(null);
+    const [loading, setLoading] = useState();
+    const navigate = useNavigate();
+    const { showNotification } = useNotification();
+    let waveElement = null;
 
-    const handleLogin = async (e) => {
-        e.preventDefault()
+    const { register, handleSubmit, formState: { errors } } = useForm();
+
+    const onSubmit = async (data) => {
         try {
-            setLoading(true)
+            setLoading(true);
             const res = await fetch(`${website_base_url}identity/auth/login`, {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    'email': emailInput.current ? emailInput.current.value : '',
-                    'password': passwordInput.current ? passwordInput.current.value : ''
-                })
-            })
+                body: JSON.stringify(data),
+                credentials: 'include'
+            });
             if (!res.ok) {
-                const errorData = await res.json()
+                const errorData = await res.json();
                 throw new Error(errorData.message);
             }
-            const data = await res.json();
-            setLoading(false)
-            if (data.result.authenticated) {
-                localStorage.setItem('evdToken', JSON.stringify(data.result.token))
-                showNotification('success', data.message)
-                navigate("/home")
+            const result = await res.json();
+            setLoading(false);
+            if (result.result.authenticated) {
+                showNotification('success', result.message);
                 setTimeout(() => {
-                    navigate('/home')
-                }, 1000)
+                    navigate('/home');
+                }, 1000);
             }
         } catch (err) {
-            showNotification('error', err.message)
-            setLoading(false)
+            showNotification('error', err.message);
+            setLoading(false);
         }
-    }
+    };
 
     const addWaveAnimation = (e) => {
         if (!waveElement) {
-            waveElement = document.createElement('div')
-            waveElement.classList.add(styles.waveElement)
-            document.body.appendChild(waveElement)
-            waveElement.style.top = `${e.clientY}px`
-            waveElement.style.left = `${e.clientX}px`
+            waveElement = document.createElement('div');
+            waveElement.classList.add(styles.waveElement);
+            document.body.appendChild(waveElement);
+            waveElement.style.top = `${e.clientY}px`;
+            waveElement.style.left = `${e.clientX}px`;
         } else {
-            waveElement.style.top = `${e.clientY}px`
-            waveElement.style.left = `${e.clientX}px`
+            waveElement.style.top = `${e.clientY}px`;
+            waveElement.style.left = `${e.clientX}px`;
         }
         setTimeout(() => {
-            waveElement?.remove()
-            waveElement = null
-        }, 300)
-    }
+            waveElement?.remove();
+            waveElement = null;
+        }, 300);
+    };
 
     useEffect(() => {
         const text = "Welcome to our website! Please login to continue... <3";
         let index = 0;
         const typeEffect = () => {
             if (!typingText.current)
-                return
+                return;
 
             typingText.current.innerHTML = text.slice(0, index) + `<span class='${styles.caretElement}'></span>`;
             index++;
@@ -85,9 +81,9 @@ function Login() {
             } else {
                 typingText.current.style.borderRight = "none";
             }
-        }
+        };
         typeEffect();
-    }, [])
+    }, []);
 
     return (
         <div className={styles.entireLoginPage + " w-full h-screen flex justify-center items-center text-white"}>
@@ -99,18 +95,32 @@ function Login() {
                 <div className="min-w-[300px] flex justify-center relative mt-[40px]">
                     <p className={styles.typingText + " max-w-[200px] h-auto text-center relative p-0"} ref={typingText}>
                     </p>
-
                 </div>
-                <form onSubmit={handleLogin} className="min-w-[250px] h-auto border-[1px] border-solid border-white rounded-[10px] p-[5px]">
-                    <InputBox id="emailInput" type={"text"} label={"Nhập email:"} refName={emailInput} />
-                    <InputBox id="passwordInput" type={"password"} label={"Nhập password:"} refName={passwordInput} />
-                    <div className="mx-1 mt-[5px]">
+                <form onSubmit={handleSubmit(onSubmit)} className="min-w-[250px] h-auto border-[1px] border-solid border-white rounded-[10px] p-[5px]">
+                    <InputBox id="emailInput" type={"text"} label="email" refName={emailInput} validation={register("email", {
+                        required: "Email isn't empty!",
+                        pattern: {
+                            value: /\S+@\S+\.\S+/,
+                            message: "Email is invalid!"
+                        },
+                    })} error={errors.email} />
+                    <InputBox id="passwordInput" type={"password"} label="password" refName={passwordInput} validation={register("password", {
+                        required: "Password isn't empty!",
+                        minLength: {
+                            value: 6,
+                            message: "Password must be at least 6 characters!"
+                        },
+                        maxLength: {
+                            value: 15,
+                            message: "Password must be no more than 15 characters!"
+                        }
+                    })} error={errors.password} />
+                    <div className="mx-1 mt-[20px]">
                         <Link>Forgot password?</Link>
                     </div>
-
                     <div className="flex justify-between mx-1 mt-1">
                         <p>Don't have an account?</p>
-                        <Link to="/signup/" className="text-white underline" >
+                        <Link to="/signup/" className="text-white underline">
                             Signup
                         </Link>
                     </div>
@@ -138,7 +148,7 @@ function Login() {
                 </form>
             </div>
         </div>
-    )
+    );
 }
 
 export default Login;

@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext } from 'react'
-import Notification from '../../services/notification_service/Notification'
+import Notification from '../components/Notification/Notification'
 
 const NotificationContext = createContext()
 
@@ -7,7 +7,7 @@ export const NotificationProvider = ({ children }) => {
     const [notification, setNotification] = useState(null)
 
     const showNotification = (type, message) => {
-        setNotification({type, message})
+        setNotification({ type, message })
         setTimeout(() => setNotification(null), 5000);
     }
 
@@ -15,9 +15,9 @@ export const NotificationProvider = ({ children }) => {
         <NotificationContext.Provider value={{ showNotification }}>
             {children}
             {notification && (
-                <Notification 
-                    type={notification.type} 
-                    message={notification.message} 
+                <Notification
+                    type={notification.type}
+                    message={notification.message}
                     onClose={() => setNotification(null)}
                 />
             )}
