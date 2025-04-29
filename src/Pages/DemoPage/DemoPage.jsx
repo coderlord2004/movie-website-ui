@@ -3,17 +3,17 @@ import Header from "../../components/Header/Header";
 import styles from './DemoPage.module.css';
 import SpinAnimation from "../../components/LoadingAnimation/SpinAnimation/SpinAnimation";
 import TextOverflow from "../../components/TextOverflow/TextOverflow";
-import BookMarkIcon from "../../components/BookMarkIcon/BookMarkIcon.js";
-import HeartIcon from "../../components/HeartIcon/HeartIcon.js";
-import { useNotification } from "../../context/NotificationContext.js";
+import BookMarkIcon from "../../components/BookMarkIcon/BookMarkIcon.jsx";
+import HeartIcon from "../../components/HeartIcon/HeartIcon.jsx";
+import { useNotification } from "../../context/NotificationContext.jsx";
 
-const api_key = process.env.REACT_APP_API_KEY;
-const access_token = process.env.REACT_APP_API_READ_ACCESS_TOKEN;
+const api_key = import.meta.env.VITE_API_KEY;
+const access_token = import.meta.env.VITE_API_READ_ACCESS_TOKEN;
 
-const tmdb_image_base_url = process.env.REACT_APP_TMDB_BASE_IMAGE_URL;
-const tmdb_base_url = process.env.REACT_APP_TMDB_BASE_URL;
+const tmdb_image_base_url = import.meta.env.VITE_TMDB_BASE_IMAGE_URL;
+const tmdb_base_url = import.meta.env.VITE_TMDB_BASE_URL;
 
-const trendingListAll = `${process.env.REACT_APP_TMDB_BASE_URL}3/trending/all/{time_window}`;
+const trendingListAll = `${import.meta.env.VITE_TMDB_BASE_URL}3/trending/all/{time_window}`;
 const backgroundImageWidth = 58
 const slideShowImageWidth = 120
 const gapBetweenImages = 20
@@ -74,7 +74,8 @@ function DemoPage() {
                 additionalHeaderStyles={{
                     backgroundColor: "rgba(0, 0, 0, 0.4)",
                     top: "10px",
-                    width: "98%",
+                    left: "10px",
+                    right: "10px",
                     borderRadius: "10px"
                 }}
             ></Header>

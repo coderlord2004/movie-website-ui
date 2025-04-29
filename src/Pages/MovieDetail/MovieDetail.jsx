@@ -1,18 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react'
 import styles from './MovieDetail.module.css'
 import { Link, useParams, useNavigate } from 'react-router-dom'
-import { useNotification } from '../../context/NotificationContext.js'
+import { useNotification } from '../../context/NotificationContext.jsx'
 import TextOverflow from '../../components/TextOverflow/TextOverflow'
 import Header from '../../components/Header/Header'
-import SpecialVideo from '../../components/Video/SpecialVideo/SpecialVideo.js'
-import Video from '../../components/Video/Video/Video.js'
-import Image from '../../components/Image/Image.js'
+import Image from '../../components/Image/Image.jsx'
 
-const api_key = process.env.REACT_APP_API_KEY;
-const access_token = process.env.REACT_APP_API_READ_ACCESS_TOKEN;
-const image_base_url = process.env.REACT_APP_TMDB_BASE_IMAGE_URL;
-const tvshow_detail_api = 'https://api.themoviedb.org/3/tv/{series_id}'
-const movie_detail_api = 'https://api.themoviedb.org/3/movie/{movie_id}'
+const api_key = import.meta.env.VITE_API_KEY;
+const access_token = import.meta.env.VITE_API_READ_ACCESS_TOKEN;
+const image_base_url = import.meta.env.VITE_TMDB_BASE_IMAGE_URL;
 const randomAvatarColor = [
     "#FF5733", "#33FF57", "#3357FF", "#FF33A1", "#A133FF",
     "#33FFF3", "#F3FF33", "#FF8C33", "#8C33FF", "#33FF8C",
@@ -28,7 +24,7 @@ function MovieDetail() {
     })
     const movieIframeBox = useRef(null)
     const { showNotification } = useNotification()
-    const { type, typeDetail, movieId, videoKey } = useParams();
+    const { type, movieId } = useParams();
     const navigate = useNavigate()
     useEffect(() => {
         const fetchMovieDetail = async () => {
@@ -56,14 +52,6 @@ function MovieDetail() {
             }
         }
         fetchMovieDetail()
-    }, [])
-
-    useEffect(() => {
-        //https://api.rophim.tv/v1/movie/filterV2?countries=&genres=&years=&type=&status=&versions=&rating=&networks=&productions=&sort=release_date&page=1&keyword=the%20gorge
-
-        //https://www.rophim.tv/xem-phim/mufasa-vua-su-tu.o2HG68kO?_rsc=16qtr
-
-        // fetch('https://www.rophim.tv/tim-kiem?q=the%20gorge')
     }, [])
 
     const formatDate = (isoString) => {

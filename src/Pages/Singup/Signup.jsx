@@ -3,12 +3,12 @@ import styles from './Signup.module.css';
 import facebookIcon from '../../assets/facebook.png';
 import googleIcon from '../../assets/google.png';
 import { Link, useNavigate } from "react-router-dom";
-import { useNotification } from "../../context/NotificationContext.js";
+import { useNotification } from "../../context/NotificationContext.jsx";
 import InputBox from "../../components/InputBox/InputBox";
 import { useForm } from 'react-hook-form';
 import SpinAnimation from "../../components/LoadingAnimation/SpinAnimation/SpinAnimation";
 
-const website_base_url = process.env.REACT_APP_WEBSITE_BASE_URL;
+const website_base_url = import.meta.env.VITE_WEBSITE_BASE_URL;
 
 function Signup() {
     const usernameInput = useRef(null);

@@ -3,11 +3,13 @@ import styles from './Login.module.css';
 import googleIcon from '../../assets/google.png';
 import { Link, useNavigate } from "react-router-dom";
 import SpinAnimation from '../../components/LoadingAnimation/SpinAnimation/SpinAnimation';
-import { useNotification } from "../../context/NotificationContext.js";
+import { useNotification } from "../../context/NotificationContext.jsx";
 import InputBox from "../../components/InputBox/InputBox";
 import { useForm } from 'react-hook-form';
+import { useUserContext } from "../../context/AuthUserContext.jsx";
+import Cookies from 'js-cookie';
 
-const website_base_url = process.env.REACT_APP_WEBSITE_BASE_URL;
+const website_base_url = import.meta.env.VITE_WEBSITE_BASE_URL;
 
 function Login() {
     const emailInput = useRef(null);
@@ -21,33 +23,30 @@ function Login() {
 
     const { register, handleSubmit, formState: { errors } } = useForm();
 
-    const onSubmit = async (data) => {
+    const onSubmit = async (formData) => {
         try {
             setLoading(true);
-            const res = await fetch(`${website_base_url}identity/auth/login`, {
+            const res = await fetch(`${website_base_url}/auth/login`, {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(data),
+                body: JSON.stringify(formData),
                 credentials: 'include'
             });
             if (!res.ok) {
                 const errorData = await res.json();
                 throw new Error(errorData.message);
             }
-            const result = await res.json();
-            setLoading(false);
-            if (result.result.authenticated) {
-                showNotification('success', result.message);
-                setTimeout(() => {
-                    navigate('/home');
-                }, 1000);
+            const data = await res.json();
+            if (data.results.authenticated) {
+                Cookies.set('auth_user', JSON.stringify(data.results), { expires: 1 });
+                navigate('/home')
             }
         } catch (err) {
             showNotification('error', err.message);
-            setLoading(false);
         }
+        setLoading(false);
     };
 
     const addWaveAnimation = (e) => {
@@ -141,8 +140,8 @@ function Login() {
                     <div className="relative w-full h-[1px] bg-slate-500 mt-8">
                         <div className="block absolute left-[50%] top-[-13px] px-2 transform translate-x-[-50%] bg-black">Or</div>
                     </div>
-                    <div className="flex mt-[25px] bg-white text-black cursor-pointer justify-center items-center pl-[8px] p-1">
-                        <img src={googleIcon} className="w-[23px]" />
+                    <div className="flex mt-[25px] bg-white text-black cursor-pointer justify-center items-center pl-[8px] p-1 rounded-[8px]">
+                        <img src={googleIcon} className="w-[23px]" alt="google" />
                         <p className="ml-[7px]">Login with Google</p>
                     </div>
                 </form>

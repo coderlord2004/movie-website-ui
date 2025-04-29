@@ -4,8 +4,9 @@ import { BrowserRouter } from 'react-router-dom';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import { NotificationProvider } from './context/NotificationContext.js';
-import { UserProvider } from './context/UserContext';
+import { NotificationProvider } from './context/NotificationContext.jsx';
+import { AuthUserProvider } from './context/AuthUserContext.jsx';
+import { PageTransitionProvider } from './context/PageTransitionContext.jsx';
 
 const buildProvidersTree = (providers) => {
   return ({ children }) =>
@@ -16,7 +17,8 @@ const buildProvidersTree = (providers) => {
 
 const ProvidersTree = buildProvidersTree([
   [BrowserRouter],
-  [UserProvider],
+  [PageTransitionProvider],
+  [AuthUserProvider],
   [NotificationProvider],
 ]);
 

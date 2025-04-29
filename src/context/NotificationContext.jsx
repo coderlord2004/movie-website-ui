@@ -1,7 +1,10 @@
 import React, { createContext, useState, useContext } from 'react'
 import Notification from '../components/Notification/Notification'
 
-const NotificationContext = createContext()
+const NotificationContext = createContext({
+    notification: null,
+    showNotification: () => { },
+})
 
 export const NotificationProvider = ({ children }) => {
     const [notification, setNotification] = useState(null)
@@ -25,4 +28,10 @@ export const NotificationProvider = ({ children }) => {
     )
 }
 
-export const useNotification = () => useContext(NotificationContext);
+export const useNotification = () => {
+    const context = useContext(NotificationContext)
+    if (!context) {
+        throw new Error('useNotification must be used within a NotificationProvider')
+    }
+    return context
+}
