@@ -1,5 +1,6 @@
-import React, { createContext, useState, useContext } from 'react'
+import React, { createContext, useState, useContext, useCallback } from 'react'
 import Notification from '../components/Notification/Notification'
+import { Link } from 'react-router-dom'
 
 const NotificationContext = createContext({
     notification: null,
@@ -8,11 +9,10 @@ const NotificationContext = createContext({
 
 export const NotificationProvider = ({ children }) => {
     const [notification, setNotification] = useState(null)
-
-    const showNotification = (type, message) => {
-        setNotification({ type, message })
+    const showNotification = useCallback((type, message) => {
+        setNotification({ type, message });
         setTimeout(() => setNotification(null), 5000);
-    }
+    }, []);
 
     return (
         <NotificationContext.Provider value={{ showNotification }}>

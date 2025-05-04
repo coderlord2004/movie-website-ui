@@ -1,30 +1,75 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 
-function Image({ id = null, title = null, src }) {
+const tmdb_image_base_url = import.meta.env.VITE_TMDB_BASE_IMAGE_URL;
+const image_base_url = import.meta.env.VITE_TMDB_BASE_IMAGE_URL;
+const tmdb_base_url = import.meta.env.VITE_TMDB_BASE_URL;
+const api_key = import.meta.env.VITE_API_KEY;
+
+function Image({ id = null, title = null, src = null, belongTo = null }) {
     const [isError, setError] = useState(false)
     const [loading, setLoading] = useState(true)
+    const [tmdbFilmDetail, setTmdbFilmDetail] = useState(null)
+    useEffect(() => {
+        const fetchTmdbFilmById = async () => {
+            const res = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${api_key}`)
+
+            const data = await res.json()
+            setTmdbFilmDetail(data)
+        }
+        if (belongTo === "TMDB_FILM") {
+            fetchTmdbFilmById()
+        }
+    }, [])
 
     if (isError)
-        return null
+        return "error"
 
     return (
-        <div key={id || null} className={"w-full h-full rounded-[10px] overflow-hidden relative" + `${loading ? " animate-skeleton" : ""}`}>
-            <img
-                onError={() => {
-                    setError(true)
-                    setLoading(false)
-                }}
-                onLoad={() => setLoading(false)}
-                className="w-full h-full absolute object-cover rounded-[10px]"
-                src={src}
-                alt=""
-            />
-            {title && <div
-                className="text-white absolute bottom-[20px] left-[30px] bg-black/70 bg-opacity-50 p-[5px] rounded-[5px]"
-            >
-                {title}
-            </div>}
+        <div
+            key={id || null}
+            className={
+                "relative w-full h-full rounded-xl overflow-hidden shadow-lg group transition-transform duration-300" +
+                `${loading ? " animate-skeleton" : ""}`
+            }
+        >
+            {(src || tmdbFilmDetail) && (
+                <img
+                    onError={() => {
+                        setError(true);
+                        setLoading(false);
+                    }}
+                    onLoad={() => setLoading(false)}
+                    className="w-full h-full object-cover absolute inset-0 transition-transform duration-500 group-hover:scale-105"
+                    src={
+                        src
+                            ? src
+                            : tmdbFilmDetail
+                                ? `${tmdb_image_base_url}/original/${tmdbFilmDetail.poster_path || tmdbFilmDetail.backdrop_path}`
+                                : ""
+                    }
+                    alt=""
+                />
+            )}
+
+            {/* Overlay for text */}
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/50 to-transparent p-4">
+                {title ? (
+                    <p className="text-white font-semibold text-lg truncate">{title}</p>
+                ) : tmdbFilmDetail ? (
+                    <div className="flex flex-col gap-2">
+                        <p className="text-white font-semibold text-lg truncate">{tmdbFilmDetail.title}</p>
+                        <Link
+                            to={`/watch-detail/theatrical-movie/${tmdbFilmDetail.id}/`}
+                            className="min-w-[45%] inline-block bg-yellow-400 text-black text-sm font-medium py-1 px-3 rounded hover:bg-yellow-300 transition"
+                        >
+                            Watch detail
+                        </Link>
+                    </div>
+                ) : null}
+            </div>
         </div>
+
     )
 }
 

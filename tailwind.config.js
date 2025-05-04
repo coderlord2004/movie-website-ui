@@ -59,6 +59,11 @@ module.exports = {
           '100%': {
             opacity: 0
           }
+        },
+        notify: {
+          '0%': { top: '-50px' },
+          '80%': { top: '20px' },
+          '100%': { top: '0px' },
         }
 
       },
@@ -68,7 +73,8 @@ module.exports = {
         skeleton: 'skeleton 1.5s linear infinite',
         dance: 'dance 0.6s ease-in-out',
         fadeIn: 'fadeIn 0.5s ease-in-out',
-        fadeOut: 'fadeOut 0.5s ease-in-out'
+        fadeOut: 'fadeOut 0.5s ease-in-out',
+        notify: 'notify 0.5s ease-in-out'
       }
     },
   },

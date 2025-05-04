@@ -1,7 +1,7 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import PulseAnimation from './LoadingAnimation/PulseAnimation/PulseAnimation';
+import Tooltip from './Tooltip';
 import Image from './Image/Image';
 import PageTransition from './PageTransition';
 import { IoIosAddCircleOutline } from "react-icons/io";
@@ -12,11 +12,12 @@ import { useNotification } from '../context/NotificationContext';
 
 const website_base_url = import.meta.env.VITE_WEBSITE_BASE_URL;
 
-export default function MovieStat({ movies, loading, setLoading }) {
-
+export default function MovieStat({ movies, onUpdateMovies, loading, onSetLoading }) {
+    console.log(movies)
     const { showNotification } = useNotification()
     const handleDeleteFilm = async (systemFilmId) => {
-        setLoading(true);
+        onSetLoading(true);
+        console.log('delete')
         try {
             const response = await fetch(`${website_base_url}/admin/delete/system-film/${systemFilmId}`, {
                 method: 'DELETE',
@@ -26,11 +27,13 @@ export default function MovieStat({ movies, loading, setLoading }) {
                 credentials: 'include'
             });
             const data = await response.json();
+            let newMovies = movies.filter(movie => movie.systemFilmId !== systemFilmId)
+            onUpdateMovies(newMovies)
             showNotification('success', data.message)
         } catch (error) {
             showNotification('success', error.message)
         } finally {
-            setLoading(false);
+            onSetLoading(false);
         }
     }
 
@@ -48,21 +51,29 @@ export default function MovieStat({ movies, loading, setLoading }) {
 
             <div className='flex items-center w-full h-full gap-[7px] flex-wrap'>
                 {movies.length > 0 ? (
-                    movies.map((movie, index) => (
+                    movies.map(movie => (
                         <div
                             key={movie.id}
                             className="min-w-[calc(100%/3-7px)] h-[200px] flex justify-between items-center bg-gray-800 rounded-[10px]  mb-[20px] cursor-pointer hover:scale-[1.04] transition-all duration-200 ease-in-out relative group"
                         >
                             <Image id={movie.systemFilmId} title={movie.title} src={movie.posterPath} />
-                            <div className='absolute top-[15px] right-[15px] w-auto flex gap-[4px] text-[140%] opacity-0 group-hover:opacity-100 transition-all duration-300 ease-in-out'>
-                                <Link to={`/watch-detail/${movie.systemFilmId}/`}>
-                                    <BiDetail title='watch detail' />
+                            <div className='absolute top-[15px] right-[15px] w-auto flex gap-[4px] text-[140%] opacity-0 group-hover:opacity-100 transition-all duration-300 ease-in-out bg-black/70 p-[5px] rounded-[10px]'>
+                                <Link to={`/watch-detail/hot-movies/${movie.systemFilmId}/`} className='hover:scale-[1.04] transition-all duration-200 ease-in-out hover:text-[yellow]'>
+                                    <Tooltip text='watch detail' >
+                                        <BiDetail />
+                                    </Tooltip>
                                 </Link>
 
-                                <RiDeleteBin6Line title='delete movie' onClick={() => handleDeleteFilm(movie.systemFilmId)} />
+                                <div onClick={() => handleDeleteFilm(movie.systemFilmId)} className='hover:scale-[1.04] transition-all duration-200 ease-in-out hover:text-[red]'>
+                                    <Tooltip text='delete movie' >
+                                        <RiDeleteBin6Line title='delete movie' />
+                                    </Tooltip>
+                                </div>
 
-                                <Link to={`/admin/update-film/${movie.systemFilmId}`}>
-                                    <LuPencilLine title='update movie' />
+                                <Link to={`/admin/update-film/${movie.systemFilmId}`} className='hover:scale-[1.04] transition-all duration-200 ease-in-out hover:text-[green]'>
+                                    <Tooltip text='update movie' >
+                                        <LuPencilLine />
+                                    </Tooltip>
                                 </Link>
                             </div>
                         </div>

@@ -18,6 +18,17 @@ code {
     monospace;
 }
 
+.commonColor {
+  background: linear-gradient(to bottom, #0f0f0f, #1a1a1a);
+}
+
+.specialColor {
+  background: linear-gradient(to right, #f472b6, #c084fc, #22d3ee);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
 .globalButtonStyle {
   width: 60px;
   height: 30px;

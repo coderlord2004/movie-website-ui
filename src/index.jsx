@@ -24,11 +24,9 @@ const ProvidersTree = buildProvidersTree([
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <React.StrictMode>
-    <ProvidersTree>
-      <App />
-    </ProvidersTree>
-  </React.StrictMode>
+  <ProvidersTree>
+    <App />
+  </ProvidersTree>
 );
 
 reportWebVitals();

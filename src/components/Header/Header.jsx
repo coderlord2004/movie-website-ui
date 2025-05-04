@@ -1,168 +1,376 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useEffect, useRef, useState } from 'react'
-import '../../index.css';
-import styles from './Header.module.css';
-import logo from '../../assets/Logo.png';
-import { useUserContext } from '../../context/AuthUserContext';
-import { useNotification } from '../../context/NotificationContext.jsx';
+import { useEffect, useRef, useState } from 'react';
+import { FaFilter, FaSearch, FaUserCircle, FaSignOutAlt, FaCog, FaTimes, FaCalendarAlt } from 'react-icons/fa';
+import { MdMovie } from 'react-icons/md';
+import { IoMdMail } from 'react-icons/io';
 import Cookies from 'js-cookie';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useUserContext } from '../../context/AuthUserContext';
+import { useNotification } from '../../context/NotificationContext';
+import logo from '../../assets/Logo.png';
 
-const website_base_url = import.meta.env.VITE_WEBSITE_BASE_URL;
+// Animation variants
+const searchVariants = {
+    collapsed: { width: '40px' },
+    expanded: { width: '250px' }
+};
 
-function Header({ onSearching, onReset, additionalHeaderStyles }) {
-    const navigate = useNavigate()
-    let searchInput = useRef(null)
-    let searchField = useRef(null)
-    let searchLabel = useRef(null)
-    let searchImg = useRef(null)
-    let header = useRef(null)
+const dropdownVariants = {
+    hidden: { opacity: 0, y: -10 },
+    visible: { opacity: 1, y: 0 }
+};
+
+const genres = ['Action', 'Comedy', 'Drama', 'Fantasy', 'Horror', 'Romance', 'Sci-Fi', 'Thriller'];
+
+const Header = ({ onSearching, onReset, activeMenu }) => {
+    const navigate = useNavigate();
+    const searchInput = useRef(null);
+    const { authUser, saveAuthUser } = useUserContext();
+    const { showNotification } = useNotification();
+    const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [searchParams, setSearchParams] = useState({
+        title: '',
+        genre: '',
+        releaseDate: ''
+    });
+    const [showFilterPanel, setShowFilterPanel] = useState(false);
     const isLogin = Cookies.get("auth_user") ? JSON.parse(Cookies.get("auth_user")) : null;
-    const { authUser, saveAuthUser } = useUserContext()
 
-    const { showNotification } = useNotification()
-    const [loading, setLoading] = useState(false)
-    const animateOnFocus = () => {
-        searchLabel.current.style = 'display: none;'
-        searchField.current.style = 'width: 20%;'
-    }
-    const animateOnBlur = () => {
-        if (searchInput.current.value === '') {
-            searchField.current.style = 'width: 10%;'
-            searchLabel.current.style = 'display: inline-block;'
+    const handleGenreSelect = (genre) => {
+        const newParams = {
+            ...searchParams,
+            genre: searchParams.genre === genre ? '' : genre
+        };
+        setSearchParams(newParams);
+        onSearching(newParams);
+    };
+
+    const handleDateChange = (e) => {
+        const newParams = {
+            ...searchParams,
+            releaseDate: e.target.value
+        };
+        setSearchParams(newParams);
+        onSearching(newParams);
+    };
+
+    const clearFilters = () => {
+        const newParams = { title: '', genre: '', releaseDate: '' };
+        setSearchParams(newParams);
+        onSearching(newParams);
+    };
+
+    const toggleSearch = () => {
+        setIsSearchExpanded(!isSearchExpanded);
+        if (!isSearchExpanded) {
+            setTimeout(() => searchInput.current.focus(), 300);
         }
-    }
+    };
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setSearchParams(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleSearch = (e) => {
+        e.preventDefault();
+        onSearching(searchParams);
+    };
+
     const handleLogout = async () => {
-        const res = await fetch(`${import.meta.env.VITE_WEBSITE_BASE_URL}/auth/logout`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            credentials: 'include'
-        })
-        if (!res.ok) {
-            const errorData = await res.json()
-            throw new Error(errorData.message)
-        }
-        navigate('/')
-    }
-    useEffect(() => {
-        const fetchUserInfo = async () => {
-            setLoading(true)
-            try {
-                const res = await fetch(`${import.meta.env.VITE_WEBSITE_BASE_URL}/users/my-info`, {
-                    method: 'GET',
-                    credentials: 'include'
-                })
+        try {
+            const res = await fetch(`${import.meta.env.VITE_WEBSITE_BASE_URL}/auth/logout`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include'
+            });
 
-                if (!res.ok) {
-                    const errorData = await res.json()
-                    throw new Error(errorData.message)
-                }
+            if (!res.ok) throw new Error(await res.json().message);
 
-                const data = await res.json()
-                saveAuthUser(data.results)
-            } catch (err) {
-                showNotification('error', err.message)
-            } finally {
-                setLoading(false)
-            }
+            Cookies.remove('auth_user');
+            saveAuthUser(null);
+            setIsDropdownOpen(false);
+            navigate('/');
+        } catch (err) {
+            showNotification('error', err.message);
+        }
+    };
 
-        }
-        if (isLogin && !authUser) {
-            fetchUserInfo()
-        }
-    }, [])
     return (
-        <header
-            style={additionalHeaderStyles}
-            className="h-[50px] bg-black flex justify-between items-center fixed top-0 left-0 right-0 z-20"
-            ref={header}
-        >
-            <div className="w-1/2 flex justify-evenly items-center text-white">
-                <img src={logo} className="w-[32px] h-[32px] rounded-[10px]" alt="" />
-                <Link to="/home" className="hover:text-red-500 hover:shadow-[2px_2px_2px_black]">Home</Link>
-                <button className="hover:text-red-500 hover:shadow-[2px_2px_2px_black]">Movies</button>
-                <button className="hover:text-red-500 hover:shadow-[2px_2px_2px_black]">TV show</button>
-            </div>
+        <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900 bg-opacity-60 backdrop-blur-sm shadow-lg border-b border-gray-800">
+            <div className="container mx-auto px-4 h-[50px] flex items-center justify-between">
+                <div className="flex items-center space-x-8">
+                    <Link to={authUser ? '/home' : '/'} className="flex items-center space-x-2">
+                        <img src={logo} alt="Logo" className="w-8 h-8 rounded-lg" />
+                        <span className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent">
+                            MovieStream
+                        </span>
+                    </Link>
 
-            <div ref={searchField} className="search-field w-[12%] h-[35px] p-2 py-4 text-white flex justify-center items-center border border-solid border-white rounded-[5px] relative transition-all duration-200 ease-linear">
-                <input
-                    id="search-input"
-                    type="search"
-                    ref={searchInput}
-                    style={additionalHeaderStyles ? {
-                        backgroundColor: "transparent",
-                        borderBottom: "1px solid white"
-                    } : {}}
-                    className="w-[85%] text-white bg-black border-none outline-none cursor-pointer"
-                    onFocus={animateOnFocus}
-                    onBlur={(e) => {
-                        if (e.target.value === '') {
-                            onReset()
-                            animateOnBlur()
-                        } else {
-                            onSearching(e.target.value)
-                        }
-                    }}
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter')
-                            onSearching(searchInput.current.value)
-                    }}
-                />
-                <label ref={searchLabel} htmlFor="search-input" className="absolute left-[7px]">Search...</label>
-                <label htmlFor="search-input" className="w-[18px] ml-[5px] cursor-pointer">
-                    <img
-                        ref={searchImg}
-                        src="https://img.icons8.com/dusk/64/search--v1.png"
-                        alt="search--v1"
-                        onClick={() => onSearching(searchInput.current.value)}
-                    />
-                </label>
-            </div>
-            {isLogin ? (
-                authUser ? (
-                    <div className={styles.userAvatar + " w-auto h-full mr-[30px] flex justify-center items-center text-white relative"}>
-                        {authUser.avatarPath ? <img width="30" height="30"
-                            src={`${website_base_url}${authUser.avatarPath}`} alt="" className="rounded-[50%]"
-                        /> : <img width="30" height="30" src="https://img.icons8.com/material/30/person-male.png" alt="person-male" className="rounded-[50%] bg-white" />
-                        }
-                        <p className="ml-[5px]">{authUser.username}</p>
-
-                        <div className={styles.detailUser + " hidden w-auto h-auto p-3 flex flex-col items-start bg-gradient-to-br from-white via-blue-100 to-purple-100 text-black rounded-xl shadow-lg absolute top-[100%] right-[-20px] hover:block border-[2px] border-solid border-blue-300"}>
-                            <p className="flex items-center gap-2 hover:bg-blue-200 px-2 py-1 w-full text-left rounded-md transition-all whitespace-nowrap">
-                                <span>👤</span> Username: {authUser.username}
-                            </p>
-                            <p className="flex items-center gap-2 hover:bg-blue-200 px-2 py-1 w-full text-left rounded-md transition-all whitespace-nowrap">
-                                <span>📧</span> {`Email: ${authUser.email}`}
-                            </p>
-                            <Link to="/my-info" className="flex items-center gap-2 hover:bg-blue-200 px-2 py-1 w-full text-left rounded-md transition-all">
-                                <span>🛡️</span> Account detail
+                    <nav className="hidden md:flex space-x-6">
+                        <Link
+                            to={authUser ? '/home' : '/'}
+                            className="text-gray-300 hover:text-white transition-colors duration-300 relative group"
+                        >
+                            Home
+                            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-purple-500 transition-all duration-300 group-hover:w-full"></span>
+                        </Link>
+                        {authUser && (
+                            <Link
+                                to="/my-info"
+                                className="text-gray-300 hover:text-white transition-colors duration-300 relative group"
+                            >
+                                Settings
+                                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-purple-500 transition-all duration-300 group-hover:w-full"></span>
                             </Link>
-                            {authUser.role === 'ADMIN' ? (
-                                <Link to="/admin" className="flex items-center gap-2 hover:bg-blue-200 px-2 py-1 w-full text-left rounded-md transition-all">
-                                    <span>🎬</span> Manage film and user
-                                </Link>
-                            ) : ('')}
-                            <button onClick={handleLogout} className="flex items-center gap-2 hover:bg-blue-200 px-2 py-1 w-full text-left rounded-md transition-all">
-                                <span>🚪</span> Log out
-                            </button>
-                        </div>
-
-                    </div>
-                ) : (
-                    <div className="flex items-center justify-center gap-x-[4px] mr-[30px]">
-                        <div className='rounded-[50%] w-[30px] h-[30px] animate-skeleton'></div>
-                        <div className='w-[50px] h-[30px] rounded-[6px] animate-skeleton'></div>
-                    </div>
-                )
-            ) : (
-                <div className="w-1/5 mr-[0] flex justify-center items-center text-white">
-                    <Link to="/login" className="hover:text-red-500">Login</Link>
-                    <Link to="/signup" className="ml-[10px] hover:text-red-500">Signup</Link>
+                        )}
+                    </nav>
                 </div>
-            )}
+
+                {/* Search và Filter Section */}
+                <div className="flex items-center gap-x-4 relative">
+                    {/* Search Bar */}
+                    <motion.form
+                        onSubmit={handleSearch}
+                        className="relative flex items-center"
+                        initial="collapsed"
+                        animate={isSearchExpanded ? "expanded" : "collapsed"}
+                        variants={searchVariants}
+                        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                    >
+                        <motion.input
+                            ref={searchInput}
+                            type="search"
+                            name="title"
+                            value={searchParams.title}
+                            onChange={handleInputChange}
+                            onBlur={(e) => {
+                                if (e.target.value === '') {
+                                    setIsSearchExpanded(false);
+                                    onReset();
+                                }
+                            }}
+                            placeholder="Search movies..."
+                            className="w-full bg-gray-800 text-white px-4 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 pr-10"
+                        />
+                        <button
+                            type="button"
+                            onClick={toggleSearch}
+                            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+                        >
+                            <FaSearch />
+                        </button>
+                    </motion.form>
+
+                    {/* Filter Panel */}
+                    {activeMenu === 'HotMoviesAndFree' && (
+                        <div className="flex items-center gap-x-2">
+                            {/* Filter Button */}
+                            <button
+                                onClick={() => setShowFilterPanel(!showFilterPanel)}
+                                className={`p-2 rounded-full transition-colors ${showFilterPanel ? 'bg-purple-600 text-white' : 'text-gray-400 hover:text-white'}`}
+                            >
+                                <FaFilter className="text-lg" />
+                            </button>
+
+                            {/* Active Filters Badges */}
+                            <div className="flex items-center gap-x-2">
+                                {searchParams.genre && (
+                                    <motion.div
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        className="flex items-center bg-purple-600/20 text-purple-400 px-3 py-1 rounded-full text-sm"
+                                    >
+                                        {searchParams.genre}
+                                        <button
+                                            onClick={() => handleGenreSelect('')}
+                                            className="ml-2 text-purple-300 hover:text-white"
+                                        >
+                                            <FaTimes className="text-xs" />
+                                        </button>
+                                    </motion.div>
+                                )}
+
+                                {searchParams.releaseDate && (
+                                    <motion.div
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        className="flex items-center bg-blue-600/20 text-blue-400 px-3 py-1 rounded-full text-sm"
+                                    >
+                                        {new Date(searchParams.releaseDate).toLocaleDateString()}
+                                        <button
+                                            onClick={() => handleDateChange({ target: { value: '' } })}
+                                            className="ml-2 text-blue-300 hover:text-white"
+                                        >
+                                            <FaTimes className="text-xs" />
+                                        </button>
+                                    </motion.div>
+                                )}
+                            </div>
+
+                            {/* Filter Dropdown */}
+                            <AnimatePresence>
+                                {showFilterPanel && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: 10 }}
+                                        transition={{ duration: 0.2 }}
+                                        className="absolute right-0 top-full mt-2 w-64 bg-gray-800 rounded-lg shadow-xl border border-gray-700 overflow-hidden z-50"
+                                    >
+                                        <div className="px-4 py-3 border-b border-gray-700 flex justify-between items-center">
+                                            <span className="text-sm font-medium text-white">Filter Options</span>
+                                            <div className="flex items-center gap-x-2">
+                                                <button
+                                                    onClick={clearFilters}
+                                                    className="text-xs text-purple-400 hover:text-purple-300"
+                                                >
+                                                    Clear All
+                                                </button>
+                                                <button
+                                                    onClick={() => setShowFilterPanel(false)}
+                                                    className="text-gray-400 hover:text-white"
+                                                >
+                                                    <FaTimes className="text-sm" />
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div className="p-4 space-y-4">
+                                            {/* Genre Filter */}
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-300 mb-2">
+                                                    Genres
+                                                </label>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {genres.map(genre => (
+                                                        <button
+                                                            key={genre}
+                                                            onClick={() => handleGenreSelect(genre)}
+                                                            className={`px-3 py-1 text-xs rounded-full transition-colors ${searchParams.genre === genre ? 'bg-purple-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
+                                                        >
+                                                            {genre}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            {/* Release Date Filter */}
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-300 mb-2">
+                                                    Release Date
+                                                </label>
+                                                <div className="relative">
+                                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                        <FaCalendarAlt className="text-gray-400" />
+                                                    </div>
+                                                    <input
+                                                        type="date"
+                                                        name="releaseDate"
+                                                        value={searchParams.releaseDate}
+                                                        onChange={handleDateChange}
+                                                        className="w-full pl-10 pr-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-white text-sm"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+                    )}
+                </div>
+
+                <div className="flex items-center space-x-4">
+                    {isLogin ? (
+                        authUser ? (
+                            <div className="relative">
+                                <button
+                                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                    className="flex items-center space-x-2 focus:outline-none"
+                                >
+                                    {authUser.avatarPath ? (
+                                        <img
+                                            src={`${authUser.avatarPath}`}
+                                            alt="Avatar"
+                                            className="w-8 h-8 rounded-full object-cover border-2 border-purple-500 hover:border-purple-300 transition-all"
+                                        />
+                                    ) : (
+                                        <FaUserCircle className="text-3xl text-gray-400 hover:text-white" />
+                                    )}
+                                </button>
+
+                                <AnimatePresence>
+                                    {isDropdownOpen && (
+                                        <motion.div
+                                            initial="hidden"
+                                            animate="visible"
+                                            exit="hidden"
+                                            variants={dropdownVariants}
+                                            transition={{ duration: 0.2 }}
+                                            className="absolute right-0 mt-2 w-56 bg-gray-800 rounded-lg shadow-xl border border-gray-700 overflow-hidden z-50"
+                                        >
+                                            <div className="px-4 py-3 border-b border-gray-700">
+                                                <p className="text-sm font-medium text-white">{authUser.username}</p>
+                                                <p className="text-xs text-gray-400 flex items-center">
+                                                    <IoMdMail className="mr-1" /> {authUser.email}
+                                                </p>
+                                            </div>
+                                            <div className="py-1">
+                                                <Link
+                                                    to="/my-info"
+                                                    className="flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 transition-colors"
+                                                    onClick={() => setIsDropdownOpen(false)}
+                                                >
+                                                    <FaCog className="mr-3" /> Account Settings
+                                                </Link>
+                                                {authUser.role === 'ADMIN' && (
+                                                    <Link
+                                                        to="/admin"
+                                                        className="flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 transition-colors"
+                                                        onClick={() => setIsDropdownOpen(false)}
+                                                    >
+                                                        <MdMovie className="mr-3" /> Admin Dashboard
+                                                    </Link>
+                                                )}
+                                                <button
+                                                    onClick={handleLogout}
+                                                    className="w-full flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 transition-colors"
+                                                >
+                                                    <FaSignOutAlt className="mr-3" /> Sign out
+                                                </button>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+                        ) : (
+                            <div className="flex space-x-2">
+                                <div className="w-8 h-8 bg-gray-700 rounded-full animate-pulse"></div>
+                                <div className="w-20 h-8 bg-gray-700 rounded-md animate-pulse"></div>
+                            </div>
+                        )
+                    ) : (
+                        <div className="flex space-x-3">
+                            <Link
+                                to="/login"
+                                className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors"
+                            >
+                                Log in
+                            </Link>
+                            <Link
+                                to="/signup"
+                                className="px-4 py-2 text-sm font-medium bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-md hover:opacity-90 transition-opacity shadow-lg"
+                            >
+                                Sign up
+                            </Link>
+                        </div>
+                    )}
+                </div>
+            </div>
         </header>
-    )
-}
+    );
+};
 
 export default Header;

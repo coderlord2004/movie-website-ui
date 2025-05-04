@@ -6,6 +6,8 @@ import TextOverflow from "../../components/TextOverflow/TextOverflow";
 import BookMarkIcon from "../../components/BookMarkIcon/BookMarkIcon.jsx";
 import HeartIcon from "../../components/HeartIcon/HeartIcon.jsx";
 import { useNotification } from "../../context/NotificationContext.jsx";
+import { useUserContext } from "../../context/AuthUserContext.jsx";
+import { useNavigate } from "react-router-dom";
 
 const api_key = import.meta.env.VITE_API_KEY;
 const access_token = import.meta.env.VITE_API_READ_ACCESS_TOKEN;
@@ -27,6 +29,8 @@ function DemoPage() {
     const backgroundImageBox = useRef(null)
     const trendingListOverviewContent = useRef(null)
     const { showNotification } = useNotification()
+    const { authUser, saveAuthUser } = useUserContext()
+    const navigate = useNavigate()
 
     useEffect(() => {
         const options = {
@@ -111,9 +115,6 @@ function DemoPage() {
                                         ref={(el) => (trendingListOverviewElements.current[index] = el)}
                                         className={styles.trendingListOverviewContent + " p-0 w-auto h-auto absolute top-[80px] left-[60px]"}
                                     >
-                                        <h1 className="text-[150%] font-bold p-0 ml-[20px] w-full h-auto">
-                                            Trending movie
-                                        </h1>
                                         <h1 className="text-[140%] font-bold p-0 w-full h-auto">
                                             {ele.title || ele.original_title || ele.name || ele.original_name}
                                         </h1>

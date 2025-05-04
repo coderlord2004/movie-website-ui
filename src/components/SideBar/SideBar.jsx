@@ -5,18 +5,16 @@ import { cinemaMenu, linkIcon, userActivitiesMenu } from '../../constants/menu';
 import { FaAngleRight, FaAngleDown, FaPhotoFilm } from "react-icons/fa6";
 import { MdMovieFilter } from "react-icons/md";
 
-function SideBar({ onUpdateActiveMenu }) {
-    const [activeMenu, setActiveMenu] = useState('HotMoviesAndFree');
+function SideBar({ onUpdateActiveMenu, menuState }) {
     const [isCinemaOpen, setCinemaOpen] = useState(true);
     const { showNotification } = useNotification();
 
     const handleMenuClick = (tab) => {
-        setActiveMenu(tab);
         onUpdateActiveMenu(tab);
     };
 
     return (
-        <div className={`${styles.sideBar} w-[230px] h-full bg-gradient-to-b from-[#0f0f0f] to-[#1a1a1a] fixed top-[50px]  z-50 shadow-lg flex flex-col py-4 px-2 overflow-y-auto left-[-100%] sm:left-0`}>
+        <div className={`${styles.sideBar} w-[230px] h-full bg-gradient-to-b from-[#0f0f0f] to-[#1a1a1a] fixed top-[50px] z-50 shadow-lg flex flex-col py-4 px-2 overflow-y-auto left-[-100%] sm:left-0`}>
 
             {/* Hot movies and Free */}
             <div
@@ -24,7 +22,7 @@ function SideBar({ onUpdateActiveMenu }) {
                 onClick={() => handleMenuClick('HotMoviesAndFree')}
             >
                 <div
-                    className={`flex items-center gap-3 font-semibold select-none transition-all ${activeMenu === 'HotMoviesAndFree' ? 'text-yellow-400' : 'text-white'}`}
+                    className={`flex items-center gap-3 font-semibold select-none transition-all ${menuState.activeMenu === 'HotMoviesAndFree' ? 'text-yellow-400' : 'text-white'}`}
                 >
                     <MdMovieFilter style={{
                         fontSize: '25px'
@@ -61,7 +59,7 @@ function SideBar({ onUpdateActiveMenu }) {
                                 alt={tab}
                                 className="w-5 h-5"
                             />
-                            <p className={`text-sm select-none ${activeMenu === tab ? 'text-yellow-400' : 'text-gray-300'}`}>
+                            <p className={`text-sm select-none ${menuState.activeMenu === tab ? 'text-yellow-400' : 'text-gray-300'}`}>
                                 {tab}
                             </p>
                         </div>
@@ -82,7 +80,7 @@ function SideBar({ onUpdateActiveMenu }) {
                             alt={tab}
                             className="w-6 h-6"
                         />
-                        <p className={`text-base select-none ${activeMenu === tab ? 'text-yellow-400' : 'text-gray-300'}`}>
+                        <p className={`text-base select-none ${menuState.activeMenu === tab ? 'text-yellow-400' : 'text-gray-300'}`}>
                             {tab}
                         </p>
                     </div>
@@ -93,4 +91,4 @@ function SideBar({ onUpdateActiveMenu }) {
     );
 }
 
-export default memo(SideBar);
+export default SideBar;

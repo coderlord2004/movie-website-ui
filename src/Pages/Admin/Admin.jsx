@@ -14,11 +14,14 @@ import PulseAnimation from '../../components/LoadingAnimation/PulseAnimation/Pul
 const website_base_url = import.meta.env.VITE_WEBSITE_BASE_URL;
 
 function Admin() {
-    const [topFilm, setTopFilm] = useState([])
-    const [type, setType] = useState("Top view")
-    const [limit, setLimit] = useState(1)
+    const [topFilm, setTopFilm] = useState({
+        topFilmData: null,
+        type: 'Top view',
+        limit: 1
+    })
+    console.log('top film:', topFilm)
     const [newUserData, setNewUserData] = useState([])
-    const [userWatchingHourly, setUserWatchingHourly] = useState(null)
+    const [popularHours, setPopularHours] = useState(null)
     const [watchingDate, setWatchingDate] = useState(() => {
         const today = new Date();
         return today.toISOString().split('T')[0];
@@ -49,13 +52,31 @@ function Admin() {
         });
     }
 
+    const handleUpdateType = () => {
+        setTopFilm(prev => (
+            {
+                ...prev,
+                type: prev.type === 'Top view' ? 'Top like' : 'Top view'
+            }
+        ))
+    }
+
+    const handleUpdateLimition = (limitValue) => {
+        setTopFilm(prev => (
+            {
+                ...prev,
+                limit: limitValue
+            }
+        ))
+    }
+
     //Dashboard
     useEffect(() => {
         const fetchTopFilm = async () => {
             try {
                 let response = null;
-                if (type === "Top view") {
-                    response = await fetch(`${website_base_url}/films/top-view-film?query=${limit}`, {
+                if (topFilm.type === "Top view") {
+                    response = await fetch(`${website_base_url}/films/top-view-film?size=${topFilm.limit}`, {
                         method: 'GET',
                         headers: {
                             'Content-Type': 'application/json',
@@ -63,7 +84,7 @@ function Admin() {
                         credentials: 'include'
                     });
                 } else {
-                    response = await fetch(`${website_base_url}/films/top-like-film`, {
+                    response = await fetch(`${website_base_url}/films/top-like-film?query=${topFilm.limit}`, {
                         method: 'GET',
                         headers: {
                             'Content-Type': 'application/json',
@@ -72,18 +93,21 @@ function Admin() {
                     });
                 }
                 const data = await response.json();
-                console.log(data);
+                setTopFilm({
+                    ...topFilm,
+                    topFilmData: data.results
+                })
             } catch (error) {
                 showNotification('error', error.message);
             }
         }
         fetchTopFilm();
-    }, [type, limit])
+    }, [topFilm.type, topFilm.limit])
 
     useEffect(() => {
-        const fetchUserWatchingHourly = async () => {
+        const fetchPopularHours = async () => {
             try {
-                const res = await fetch(`${website_base_url}/admin/users/watching/hourly?watchDate=${watchingDate}`, {
+                const res = await fetch(`${website_base_url}/admin/popular-hours`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -96,12 +120,12 @@ function Admin() {
                 }
                 const data = await res.json()
                 console.log('watching:', data.results)
-                setUserWatchingHourly(data.results)
+                setPopularHours(data.results)
             } catch (error) {
                 showNotification('error', error.message);
             }
         }
-        fetchUserWatchingHourly();
+        fetchPopularHours();
     }, [watchingDate])
 
     useEffect(() => {
@@ -133,7 +157,7 @@ function Admin() {
         const fetchAllUser = async () => {
             setLoading(true)
             try {
-                const response = await fetch(`${website_base_url}/admin/get-users`, {
+                const response = await fetch(`${website_base_url}/admin/get-users?page=${pageNumber}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -149,10 +173,10 @@ function Admin() {
                 setLoading(false)
             }
         }
-        if (activeMenu === "Users" && allUserData.length === 0) {
+        if (activeMenu === "Users") {
             fetchAllUser();
         }
-    }, [activeMenu])
+    }, [activeMenu, pageNumber])
 
     // movies
     useEffect(() => {
@@ -174,14 +198,11 @@ function Admin() {
                 setLoading(false);
             }
         };
-        if ((activeMenu === "Movies" && movies.length === 0) || pageNumber > 0) {
+        if ((activeMenu === "Movies" && movies.length === 0) || (activeMenu === 'Movies' && pageNumber > 0)) {
             fetchMovies();
         }
     }, [activeMenu, pageNumber]);
 
-    const handleUpdateType = () => {
-        setType(prev => (prev === 'Top view' ? 'Top like' : 'Top view'))
-    }
 
     return (
         <div className="w-auto h-auto flex flex-col justify-center items-center overflow-x-hidden text-white">
@@ -191,13 +212,13 @@ function Admin() {
 
             <AdminSideBar isOpen={isOpenSidebar} onClose={() => setIsOpenSidebar(!isOpenSidebar)} onUpdateActiveMenu={setActiveMenu} />
 
-            <div className={"w-full min-h-screen flex flex-col justify-center items-center px-[5px] bg-black rounded-[10px] mt-[50px] relative " + `${isOpenSidebar ? "sm:w-[calc(100%-230px)] sm:ml-[230px]" : "sm:w-full"}`}>
+            <div className={"w-full min-h-screen flex flex-col justify-start items-center px-[5px] bg-black rounded-[10px] mt-[50px] relative " + `${isOpenSidebar ? "sm:w-[calc(100%-230px)] sm:ml-[230px]" : "sm:w-full"}`}>
                 {activeMenu === "Dashboard" ? (
-                    <Dashboard newUserData={newUserData} onUpdateType={handleUpdateType} topFilm={topFilm} userWatchingHourly={userWatchingHourly} />
+                    <Dashboard newUserData={newUserData} onUpdateType={handleUpdateType} onUpdateLimition={handleUpdateLimition} topFilm={topFilm} popularHours={popularHours} />
                 ) : activeMenu === "Users" ? (
-                    <UserStat allUserData={allUserData} />
+                    <UserStat allUserData={allUserData} onUpdateUser={setAllUserData} onSetLoading={setLoading} />
                 ) : activeMenu === "Movies" ? (
-                    <MovieStat movies={movies} loading={loading} onSetLoading={setLoading} />
+                    <MovieStat movies={movies} onUpdateMovies={setMovies} loading={loading} onSetLoading={setLoading} />
                 ) : activeMenu === "Setting" ? (
                     <Setting />
                 ) : ''}

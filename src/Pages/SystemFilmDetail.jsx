@@ -1,8 +1,13 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { useNotification } from '../context/NotificationContext.jsx';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BiSolidLike, BiSolidDislike } from "react-icons/bi";
+import { FaRegThumbsUp, FaThumbsUp, FaRegThumbsDown, FaThumbsDown } from 'react-icons/fa';
+import PulseAnimation from '../components/LoadingAnimation/PulseAnimation/PulseAnimation.jsx';
+import SpinAnimation from '../components/LoadingAnimation/SpinAnimation/SpinAnimation.jsx';
+import Comment from '../components/Comment.jsx';
+import { useUserContext } from '../context/AuthUserContext.jsx';
+import formatDate from '../utils/formatDate.js';
 
 const website_base_url = import.meta.env.VITE_WEBSITE_BASE_URL;
 
@@ -11,11 +16,16 @@ function SystemFilmDetail() {
     const { systemFilmId } = useParams();
     const [systemFilmDetail, setSystemFilmDetail] = useState({
         systemFilmData: null,
-        systemFilmComment: []
+        reactionState: null
     })
+    console.log('systemFilmDetail', systemFilmDetail)
     const [loading, setLoading] = useState(true)
     const [isVideoPlaying, setIsVideoPlaying] = useState(false)
-
+    const [isUpdateData, setIsUpdateData] = useState(false)
+    const { authUser } = useUserContext()
+    const videoRef = useRef(null);
+    console.log('authUser', authUser)
+    console.log('systemFilmDetail', systemFilmDetail)
     useEffect(() => {
         const fetchFilmDetail = async () => {
             try {
@@ -25,44 +35,154 @@ function SystemFilmDetail() {
                 }
                 const results = await Promise.allSettled([
                     fetch(`${website_base_url}/api/system-films/${systemFilmId}/detail`, options).then(res => res.json()),
-                    fetch(`${website_base_url}/api/comment/film/${systemFilmId}/comment-list`, options).then(res => res.json())
+                    fetch(`${website_base_url}/api/reaction/get-user-reaction`, options).then(res => res.json())
                 ])
-
+                let userReactionState = results[1].value.results.find(e => e.film_id === systemFilmId)
                 setSystemFilmDetail({
                     systemFilmData: results[0].value.results,
-                    systemFilmComment: results[1].value,
+                    reactionState: userReactionState ? userReactionState.reaction_type : null
                 })
-
-                if (results[0].status === "rejected") {
-                    showNotification("error", "Getting a movie detail is errored!");
-                }
-                if (results[1].status === "rejected") {
-                    showNotification("error", "Getting movies is errored!");
-                }
-
-                setLoading(false)
             } catch (error) {
-                console.error("Error fetching film data:", error)
-                showNotification(error.message, 'error')
+                showNotification('error', error.message)
+            } finally {
                 setLoading(false)
             }
         }
         fetchFilmDetail()
-    }, [systemFilmId, showNotification])
-
-    const formatDate = (dateString) => {
-        const options = { year: 'numeric', month: 'long', day: 'numeric' };
-        return new Date(dateString).toLocaleDateString(undefined, options);
-    };
+    }, [systemFilmId, showNotification, isUpdateData])
 
     const toggleVideoPlay = () => {
         setIsVideoPlaying(!isVideoPlaying);
     };
 
+    const handleReactionFilm = async (reactionType) => {
+        try {
+            setSystemFilmDetail(prev => {
+                const currentReaction = prev.reactionState;
+                const newReaction = currentReaction === reactionType ? null : reactionType;
+
+                let likes = prev.systemFilmData.numberOfLikes;
+                let dislikes = prev.systemFilmData.numberOfDislikes;
+
+                if (currentReaction === 'LIKE' && newReaction !== 'LIKE') {
+                    likes--;
+                } else if (currentReaction !== 'LIKE' && newReaction === 'LIKE') {
+                    likes++;
+                }
+
+                if (currentReaction === 'DISLIKE' && newReaction !== 'DISLIKE') {
+                    dislikes--;
+                } else if (currentReaction !== 'DISLIKE' && newReaction === 'DISLIKE') {
+                    dislikes++;
+                }
+
+                return {
+                    ...prev,
+                    reactionState: newReaction,
+                    systemFilmData: {
+                        ...prev.systemFilmData,
+                        numberOfLikes: likes,
+                        numberOfDislikes: dislikes
+                    }
+                };
+            });
+
+            const response = await fetch(`${website_base_url}/api/reaction/save-reaction`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    filmId: systemFilmId,
+                    reactionType: reactionType,
+                    reactionTime: new Date()
+                }),
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                throw new Error(await response.text());
+            }
+
+        } catch (err) {
+            console.log(err.message)
+            showNotification('error', err.message);
+        }
+    };
+
+    const saveWatchHistory = async () => {
+        try {
+            const response = await fetch(`${website_base_url}/api/watching/save-watching-history`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    filmId: systemFilmId,
+                    ownerFilm: "SYSTEM_FILM",
+                    tmdbId: ""
+                }),
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message);
+            }
+        } catch (err) {
+            console.log(err.message)
+            showNotification('error', err.message);
+        }
+    }
+
+    const saveWatchedDuration = async (duration) => {
+        try {
+            const response = await fetch(`${website_base_url}/api/watching/save-watched-duration/${systemFilmId}?watchedDuration=${duration}`, {
+                method: 'GET',
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message);
+            }
+        } catch (err) {
+            console.log(err.message)
+            showNotification('error', err.message);
+        }
+    }
+
+    const increaseNumberOfViews = async (duration) => {
+        // if (duration < 0.5 * systemFilmDetail.systemFilmData.totalDuration) return
+        try {
+            const response = await fetch(`${website_base_url}/films/${systemFilmId}/increase-view?watchedDuration=${duration}`, {
+                method: 'POST',
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message);
+            }
+            setIsUpdateData(!isUpdateData)
+        } catch (err) {
+            console.log(err.message)
+            showNotification('error', err.message);
+        }
+    }
+
     if (loading) {
         return (
             <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+                <PulseAnimation onLoading={loading} />
+            </div>
+        );
+    }
+
+    if (!authUser) {
+        return (
+            <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+                <p className="text-gray-300 text-xl">Please log in to view this page.</p>
             </div>
         );
     }
@@ -88,10 +208,14 @@ function SystemFilmDetail() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/70 to-transparent"></div>
                 <motion.button
-                    onClick={toggleVideoPlay}
+                    onClick={() => {
+                        toggleVideoPlay()
+                        saveWatchHistory()
+                    }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className="absolute top-1/3 left-1/2 transform translate-x-[-50%] hover:scale-[1.05] active:scale-[0.95] bg-purple-600 hover:bg-purple-700 rounded-full p-3 shadow-lg"
+                    initial={{ x: '-50%' }}
+                    className="absolute top-1/3 left-1/2 bg-purple-600 hover:bg-purple-700 rounded-full p-3 shadow-lg"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-[40px] w-[40px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
@@ -100,6 +224,7 @@ function SystemFilmDetail() {
                 </motion.button>
             </div>
 
+            {/* Video modal */}
             <AnimatePresence>
                 {isVideoPlaying && (
                     <motion.div
@@ -107,16 +232,31 @@ function SystemFilmDetail() {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center p-4"
-                        onClick={toggleVideoPlay}
+                        onClick={() => {
+                            if (videoRef.current) {
+                                const watchedTime = Math.floor(videoRef.current.currentTime);
+                                saveWatchedDuration(watchedTime);
+                                increaseNumberOfViews(watchedTime);
+                            }
+                            toggleVideoPlay();
+                        }}
+
                     >
                         <motion.div
                             initial={{ scale: 0.9 }}
                             animate={{ scale: 1 }}
-                            className="relative w-full max-w-4xl"
+                            className="relative w-full max-w-4xl justify-center items-center"
                             onClick={(e) => e.stopPropagation()}
                         >
                             <button
-                                onClick={toggleVideoPlay}
+                                onClick={() => {
+                                    if (videoRef.current) {
+                                        const watchedTime = Math.floor(videoRef.current.currentTime);
+                                        saveWatchedDuration(watchedTime);
+                                        increaseNumberOfViews(watchedTime);
+                                    }
+                                    toggleVideoPlay();
+                                }}
                                 className="absolute -top-12 right-0 text-gray-300 hover:text-white"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -124,15 +264,17 @@ function SystemFilmDetail() {
                                 </svg>
                             </button>
                             <video
+                                ref={videoRef}
                                 controls
                                 autoPlay
-                                className="w-full rounded-lg shadow-xl"
+                                className="w-full max-h-[400px] rounded-lg shadow-xl"
                                 src={systemFilmDetail.systemFilmData.videoPath}
                             />
                         </motion.div>
                     </motion.div>
                 )}
             </AnimatePresence>
+
 
             <div className="container mx-auto px-4 py-8 -mt-20 relative z-10">
                 <motion.div
@@ -185,9 +327,9 @@ function SystemFilmDetail() {
                                 animate={{ opacity: 1 }}
                                 transition={{ delay: 0.5 }}
                             >
-                                <span>{formatDate(systemFilmDetail.releaseDate)}</span>
+                                <span>{formatDate(systemFilmDetail.systemFilmData.releaseDate)}</span>
                                 <span>•</span>
-                                <span>{systemFilmDetail.numberOfViews} views</span>
+                                <span>{systemFilmDetail.systemFilmData.numberOfViews} views</span>
                             </motion.div>
 
                             <motion.div
@@ -196,16 +338,34 @@ function SystemFilmDetail() {
                                 animate={{ opacity: 1 }}
                                 transition={{ delay: 0.6 }}
                             >
-                                <button className="flex items-center space-x-1 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg transition">
-                                    <BiSolidLike />
+                                <motion.button
+                                    whileTap={{ scale: 0.95 }}
+                                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition ${systemFilmDetail.reactionState === 'LIKE' ? 'bg-purple-600 text-white' : 'bg-gray-700 hover:bg-gray-600'}`}
+                                    onClick={() => handleReactionFilm('LIKE')}
+                                >
+                                    {systemFilmDetail.reactionState === 'LIKE' ? (
+                                        <FaThumbsUp className="text-xl" />
+                                    ) : (
+                                        <FaRegThumbsUp className="text-xl" />
+                                    )}
                                     <span>{systemFilmDetail.systemFilmData.numberOfLikes}</span>
-                                </button>
-                                <button className="flex items-center space-x-1 bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg transition">
-                                    <BiSolidDislike />
+                                </motion.button>
+
+                                <motion.button
+                                    whileTap={{ scale: 0.95 }}
+                                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition ${systemFilmDetail.reactionState === 'DISLIKE' ? 'bg-red-600 text-white' : 'bg-gray-700 hover:bg-gray-600'}`}
+                                    onClick={() => handleReactionFilm('DISLIKE')}
+                                >
+                                    {systemFilmDetail.reactionState === 'DISLIKE' ? (
+                                        <FaThumbsDown className="text-xl" />
+                                    ) : (
+                                        <FaRegThumbsDown className="text-xl" />
+                                    )}
                                     <span>{systemFilmDetail.systemFilmData.numberOfDislikes}</span>
-                                </button>
+                                </motion.button>
+
                                 <button className="flex items-center space-x-1 bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg transition">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-[23px] w-[23px]" viewBox="0 0 20 20" fill="currentColor">
                                         <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd" />
                                     </svg>
                                     <span>{systemFilmDetail.systemFilmData.numberOfComments} comments</span>
@@ -219,49 +379,13 @@ function SystemFilmDetail() {
                                 transition={{ delay: 0.7 }}
                             >
                                 <h2 className="text-xl font-semibold text-white mb-2">Overview</h2>
-                                <p className="text-gray-300 leading-relaxed">{systemFilmDetail.overview}</p>
+                                <p className="text-gray-300 leading-relaxed">{systemFilmDetail.systemFilmData.overview}</p>
                             </motion.div>
                         </div>
                     </div>
                 </motion.div>
 
-                <motion.div
-                    className="mt-12"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.8 }}
-                >
-                    <h2 className="text-2xl font-bold text-white mb-6">Comments</h2>
-                    <div className="space-y-6">
-                        {systemFilmDetail.systemFilmComment.map(comment => (
-                            <div key={comment.commentId} className="bg-gray-800 rounded-lg p-4">
-                                <div className="flex items-center space-x-4">
-                                    <img src={comment.avatarPath} alt={comment.username} className="w-10 h-10 rounded-full object-cover" />
-                                    <div>
-                                        <h4 className="font-semibold">{comment.username}</h4>
-                                        <span className="text-gray-400 text-xs">{formatDate(comment.commentTime)}</span>
-                                    </div>
-                                </div>
-                                <p className="mt-2 text-gray-300">{comment.content}</p>
-                                {comment.childComments && comment.childComments.length > 0 && (
-                                    <div className="ml-10 mt-4 space-y-4">
-                                        {comment.childComments.map(child => (
-                                            <div key={child.commentId} className="flex space-x-4">
-                                                <img src={child.avatarPath} alt={child.username} className="w-8 h-8 rounded-full object-cover" />
-                                                <div>
-                                                    <h5 className="font-semibold text-sm">{child.username}</h5>
-                                                    <span className="text-gray-400 text-xs">{formatDate(child.commentTime)}</span>
-                                                    <p className="text-gray-300 text-sm mt-1">{child.content}</p>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                </motion.div>
-
+                {/* Detail */}
                 <motion.div
                     className="mt-12"
                     initial={{ opacity: 0, y: 20 }}
@@ -275,8 +399,8 @@ function SystemFilmDetail() {
                             <p className="text-gray-400">{formatDate(systemFilmDetail.systemFilmData.releaseDate)}</p>
                         </div>
                         <div>
-                            <h3 className="text-lg font-semibold text-gray-300 mb-2">Status</h3>
-                            <p className="text-gray-400">{systemFilmDetail.systemFilmData.belongTo}</p>
+                            <h3 className="text-lg font-semibold text-gray-300 mb-2">Belonging</h3>
+                            <p className="text-gray-400">{systemFilmDetail.systemFilmData.belongTo.replace('_', ' ')}</p>
                         </div>
                         <div>
                             <h3 className="text-lg font-semibold text-gray-300 mb-2">Added to System</h3>
@@ -284,8 +408,11 @@ function SystemFilmDetail() {
                         </div>
                     </div>
                 </motion.div>
+
+                {/* Comment */}
+                <Comment systemFilmData={systemFilmDetail.systemFilmData} onUpdateData={() => setIsUpdateData(!isUpdateData)} />
             </div>
-        </div>
+        </div >
     )
 }
 

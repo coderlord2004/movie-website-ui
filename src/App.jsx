@@ -5,7 +5,7 @@ import Login from "./Pages/Login/Login.jsx";
 import Signup from "./Pages/Singup/Signup.jsx";
 import "./index.css";
 import UserDetail from "./Pages/UserDetail/UserDetail.jsx";
-import MovieDetail from "./Pages/MovieDetail/MovieDetail.jsx";
+import TmdbFilmDetail from "./Pages/TmdbFilmDetail/TmdbFilmDetail.jsx";
 import DemoPage from "./Pages/DemoPage/DemoPage.jsx";
 import WatchFilm from "./Pages/WatchFilm/WatchFilm.jsx";
 import Admin from "./Pages/Admin/Admin.jsx";
@@ -26,11 +26,11 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/my-info" element={<UserDetail />} />
         <Route
-          path="/watch-detail/:type/:typeDetail/:movieId"
-          element={<MovieDetail />}
+          path="/watch-detail/theatrical-movie/:tmdbFilmId"
+          element={<TmdbFilmDetail />}
         />
         <Route
-          path="/watch-detail/:systemFilmId"
+          path="/watch-detail/hot-movies/:systemFilmId"
           element={<SystemFilmDetail />}
         />
         <Route path="/watch/:videoKey" element={<WatchFilm />} />

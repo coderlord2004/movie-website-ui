@@ -1,9 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import Header from '../../components/Header/Header';
 import { IoIosAddCircleOutline } from "react-icons/io";
 import PulseAnimation from '../../components/LoadingAnimation/PulseAnimation/PulseAnimation';
+import { useNotification } from '../../context/NotificationContext'
+import Cropper from 'react-easy-crop';
+import Modal from 'react-modal';
+import getCroppedImg from '../../utils/cropImage';
 
 const website_base_url = import.meta.env.VITE_WEBSITE_BASE_URL;
+const aspectRatios = {
+    backdrop: [
+        { label: 'Original', value: null },
+        { label: '16:9', value: 16 / 9 },
+        { label: '4:3', value: 4 / 3 },
+        { label: '3:2', value: 3 / 2 },
+    ],
+    poster: [
+        { label: 'Original', value: null },
+        { label: '2:3', value: 2 / 3 },
+        { label: '3:4', value: 3 / 4 },
+        { label: '9:16', value: 9 / 16 },
+    ]
+};
 
 function UploadFilm() {
     const [formData, setFormData] = useState({
@@ -25,6 +44,19 @@ function UploadFilm() {
 
     const [loading, setLoading] = useState(false);
     const [genreSelection, setGenreSelection] = useState(['']);
+    const { showNotification } = useNotification()
+
+    const [cropModal, setCropModal] = useState({
+        open: false,
+        type: null,
+        image: null
+    });
+    const [crop, setCrop] = useState({ x: 0, y: 0 });
+    const [zoom, setZoom] = useState(1);
+    console.log('crop: ', crop);
+    console.log('zoom: ', zoom);
+    const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+    const [aspect, setAspect] = useState(null);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -68,23 +100,74 @@ function UploadFilm() {
         }));
     };
 
+    const onCropComplete = (_, croppedPixels) => {
+        setCroppedAreaPixels(croppedPixels);
+    };
+
+    const showCropModal = (type, image) => {
+        // Tạo một Image object để lấy tỉ lệ gốc
+        const img = new Image();
+        img.src = image;
+
+        img.onload = () => {
+            const originalAspect = img.width / img.height;
+
+            setAspect(originalAspect); // Set tỉ lệ ban đầu là tỉ lệ gốc
+            setCropModal({ open: true, type, image, originalAspect });
+        };
+    };
+
+    const handleCropDone = async () => {
+        try {
+            const croppedImage = await getCroppedImg(cropModal.image, croppedAreaPixels);
+            setPreviewImages(prev => ({
+                ...prev,
+                [cropModal.type]: croppedImage
+            }));
+            setFormData(prev => ({
+                ...prev,
+                [cropModal.type]: dataURLtoFile(croppedImage, `${cropModal.type}.jpg`)
+            }));
+            setCropModal({ open: false, type: null, image: null });
+        } catch (error) {
+            showNotification("error", error);
+        }
+    };
+
+    const dataURLtoFile = (dataUrl, filename) => {
+        const arr = dataUrl.split(',');
+        const mime = arr[0].match(/:(.*?);/)[1];
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new File([u8arr], filename, { type: mime });
+    };
+
     const handleFileChange = (e) => {
         const { name, files } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: files[0]
-        }));
-
         if (files && files[0]) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
+            if (name === 'video') {
+                const videoUrl = URL.createObjectURL(files[0]);
                 setPreviewImages(prev => ({
                     ...prev,
-                    [name]: event.target.result
+                    video: videoUrl
                 }));
-            };
-            reader.readAsDataURL(files[0]);
+                setFormData(prev => ({
+                    ...prev,
+                    video: files[0]
+                }));
+            } else {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    showCropModal(name, event.target.result);
+                };
+                reader.readAsDataURL(files[0]);
+            }
         }
+        e.target.value = '';
     };
 
     const handleSubmit = (e) => {
@@ -97,11 +180,18 @@ function UploadFilm() {
             credentials: "include"
         })
             .then(res => res.json())
-            .then(data => console.log('data: ', data))
-            .catch(err => console.log('err: ', err))
+            .then(data => showNotification('success', data.message))
+            .catch(err => showNotification('error', err.message))
             .finally(() => setLoading(false));
-
     };
+
+    useEffect(() => {
+        return () => {
+            if (previewImages.video) {
+                URL.revokeObjectURL(previewImages.video);
+            }
+        };
+    }, [previewImages.video]);
 
     return (
         <div className="min-h-screen bg-[#1F1F1F] text-gray-300 py-10">
@@ -206,10 +296,11 @@ function UploadFilm() {
                             required
                         />
                         {previewImages.video && (
-                            <video controls className="mt-3 w-full rounded-lg">
-                                <source src={previewImages.video} type="video/mp4" />
-                                Your browser does not support the video tag.
-                            </video>
+                            <video
+                                controls
+                                className="mt-3 w-full rounded-lg max-h-[300px]"
+                                src={previewImages.video}
+                            />
                         )}
                     </div>
 
@@ -265,6 +356,78 @@ function UploadFilm() {
                     </button>
                 </form>
             </div>
+
+            {cropModal.open &&
+                ReactDOM.createPortal(
+                    <div
+                        key={cropModal.image}
+                        className="fixed top-[10px] right-0 left-0 bottom-0 z-50 flex flex-col items-center justify-center bg-black bg-opacity-70 p-[20px]"
+                    >
+                        <div className="bg-[#2D2D2D] p-4 rounded-lg max-w-4xl w-full flex flex-col">
+                            <h2 className="text-white text-xl mb-4">Crop {cropModal.type}</h2>
+
+                            {/* Aspect ratio selection */}
+                            <div className="flex gap-2 mb-4">
+                                {aspectRatios[cropModal.type].map((ratio) => (
+                                    <button
+                                        key={ratio.label}
+                                        onClick={() => setAspect(ratio.label === 'Original' ? cropModal.originalAspect : ratio.value)}
+                                        className={`px-3 py-1 rounded ${(ratio.label === 'Original' && aspect === cropModal.originalAspect) ||
+                                            (ratio.value === aspect) ? 'bg-blue-600 text-white' : 'bg-gray-600 text-gray-300'
+                                            }`}
+                                    >
+                                        {ratio.label}
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* Cropper container with fixed height */}
+                            <div className="relative w-full" style={{ height: '60vh' }}>
+                                <Cropper
+                                    image={cropModal.image}
+                                    crop={crop}
+                                    zoom={zoom}
+                                    aspect={aspect}
+                                    onCropChange={setCrop}
+                                    onZoomChange={setZoom}
+                                    onCropComplete={onCropComplete}
+                                    classes={{ containerClassName: 'cropper-container' }}
+                                />
+                            </div>
+
+                            {/* Zoom controls */}
+                            <div className="mt-4 cursor-grabbing">
+                                <label className="text-white block mb-2">Zoom</label>
+                                <input
+                                    type="range"
+                                    value={zoom}
+                                    min={1}
+                                    max={3}
+                                    step={0.1}
+                                    onChange={(e) => setZoom(e.target.value)}
+                                    className="w-full"
+                                />
+                            </div>
+
+                            <div className="flex justify-end mt-4 gap-2">
+                                <button
+                                    onClick={() => setCropModal({ open: false, type: null, image: null })}
+                                    className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleCropDone}
+                                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                                >
+                                    Crop
+                                </button>
+                            </div>
+                        </div>
+                    </div>,
+                    document.body
+                )}
+
         </div>
     );
 }

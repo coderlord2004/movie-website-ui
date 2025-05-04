@@ -4,8 +4,21 @@ import Movie from './Movie/Movie'
 import PageTransition from './PageTransition'
 import { cinemaMenu, cinemaMap } from '../constants/menu'
 export default function MovieList({ movies, menuState, onSetMenuState }) {
+    if (movies && menuState.activeMenu !== 'HotMoviesAndFree' && movies.belong_to === 'SYSTEM_FILM')
+        return null
+    if (movies && movies.results.length === 0) {
+        return (
+            <div className="w-full h-auto flex flex-col justify-evenly items-center text-white">
+                <div className="w-full h-auto flex justify-center items-center text-white text-[20px] font-bold">
+                    No movies found
+                </div>
+                <PageTransition />
+            </div>
+        )
+    }
+
     return (
-        <div key={menuState.activeMenu} className="w-full h-full relative rounded-[10px] flex  flex-wrap gap-x-[8px] gap-y-[12px]">
+        <div className="w-full h-full relative rounded-[10px] flex  flex-wrap gap-x-[8px] gap-y-[12px]">
             <div className="menuOnMobile absolute top-0 left-0 text-white w-[20px] h-[20px] text-center block sm:hidden">
                 X
             </div>
@@ -13,7 +26,7 @@ export default function MovieList({ movies, menuState, onSetMenuState }) {
                 {movies && (
                     <SpecialMovie
                         id={"movie0"}
-                        movieData={movies}
+                        movieData={movies.results[0]}
                         typeDetail={
                             menuState.cinemaType ? menuState.cinemaType.toLowerCase() : ""
                         }
@@ -53,14 +66,9 @@ export default function MovieList({ movies, menuState, onSetMenuState }) {
             {movies && (
                 movies.results.slice(1).map((data, index) => (
                     <Movie
-                        id={`movie${index + 1}`}
+                        key={index}
+                        id={index}
                         movieData={data}
-                        type={movies.type ? movies.type.toLowerCase().split(" ")[0] : ""}
-                        typeDetail={
-                            menuState.cinemaType
-                                ? menuState.cinemaType.toLowerCase()
-                                : ""
-                        }
                         belongTo={movies.belong_to}
                     />
                 ))

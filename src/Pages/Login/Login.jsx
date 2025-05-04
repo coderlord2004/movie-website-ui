@@ -24,6 +24,7 @@ function Login() {
     const { register, handleSubmit, formState: { errors } } = useForm();
 
     const onSubmit = async (formData) => {
+
         try {
             setLoading(true);
             const res = await fetch(`${website_base_url}/auth/login`, {
@@ -41,7 +42,7 @@ function Login() {
             const data = await res.json();
             if (data.results.authenticated) {
                 Cookies.set('auth_user', JSON.stringify(data.results), { expires: 1 });
-                navigate('/home')
+                navigate('/home');
             }
         } catch (err) {
             showNotification('error', err.message);
@@ -96,24 +97,39 @@ function Login() {
                     </p>
                 </div>
                 <form onSubmit={handleSubmit(onSubmit)} className="min-w-[250px] h-auto border-[1px] border-solid border-white rounded-[10px] p-[5px]">
-                    <InputBox id="emailInput" type={"text"} label="email" refName={emailInput} validation={register("email", {
-                        required: "Email isn't empty!",
-                        pattern: {
-                            value: /\S+@\S+\.\S+/,
-                            message: "Email is invalid!"
-                        },
-                    })} error={errors.email} />
-                    <InputBox id="passwordInput" type={"password"} label="password" refName={passwordInput} validation={register("password", {
-                        required: "Password isn't empty!",
-                        minLength: {
-                            value: 6,
-                            message: "Password must be at least 6 characters!"
-                        },
-                        maxLength: {
-                            value: 15,
-                            message: "Password must be no more than 15 characters!"
-                        }
-                    })} error={errors.password} />
+                    <InputBox
+                        id="emailInput"
+                        type="text"
+                        label="email"
+                        ref={emailInput}
+                        validation={register("email", {
+                            required: "Email isn't empty!",
+                            pattern: {
+                                value: /\S+@\S+\.\S+/,
+                                message: "Email is invalid!"
+                            },
+                        })}
+                        error={errors.email}
+                    />
+                    <InputBox
+                        id="passwordInput"
+                        type="password"
+                        label="password"
+                        ref={passwordInput}
+                        validation={register("password", {
+                            required: "Password isn't empty!",
+                            minLength: {
+                                value: 6,
+                                message: "Password must be at least 6 characters!"
+                            },
+                            maxLength: {
+                                value: 15,
+                                message: "Password must be no more than 15 characters!"
+                            }
+                        })}
+                        error={errors.password}
+                    />
+
                     <div className="mx-1 mt-[20px]">
                         <Link>Forgot password?</Link>
                     </div>

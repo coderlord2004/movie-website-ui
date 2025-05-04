@@ -34,12 +34,15 @@ function Home() {
     activeMenu: 'HotMoviesAndFree',
     cinemaType: null,
   });
+
   const [playlist, setPlaylist] = useState({
-    systemFilm: [],
-    tmdbFilm: []
+    systemFilm: null,
+    tmdbFilm: null
   })
-  const [filmHistory, setFilmHistory] = useState([])
-  console.log('playlist:', playlist)
+  const [filmHistory, setFilmHistory] = useState({
+    systemFilm: null,
+    tmdbFilm: null
+  })
 
   const movieListBox = useRef(null);
   const { showNotification } = useNotification();
@@ -51,8 +54,37 @@ function Home() {
       cinemaType: cinemaMap[newActiveMenu] ? cinemaMap[newActiveMenu][0] : null,
     });
   };
+
+  useEffect(() => {
+    const fetchSystemMovie = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(import.meta.env.VITE_WEBSITE_BASE_URL + "/api/system-films/summary-list?page=" + pageNumber, {
+          credentials: "include"
+        })
+        if (!res.ok) {
+          throw new Error("Failed to fetch data from the server.");
+        }
+        const data = await res.json();
+        data.belong_to = 'SYSTEM_FILM'
+        initialMovie.current = data;
+        setMovies(data);
+        setLoading(false);
+      } catch (err) {
+        setLoading(false);
+        showNotification("error", err.message);
+      }
+    }
+
+    if (menuState.activeMenu === 'HotMoviesAndFree') {
+      fetchSystemMovie();
+    }
+
+  }, [menuState, pageNumber]);
+
   useEffect(() => {
     const fetchTmdbMovie = async () => {
+      console.log('fetchTmdbMovie')
       setLoading(true);
       try {
         const params = {
@@ -72,33 +104,9 @@ function Home() {
       }
     };
 
-    const fetchSystemMovie = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(import.meta.env.VITE_WEBSITE_BASE_URL + "/api/system-films/summary-list?page=" + pageNumber, {
-          credentials: "include"
-        })
-        if (!res.ok) {
-          throw new Error("Failed to fetch data from the server.");
-        }
-        const data = await res.json();
-        console.log('system data: ', data)
-        data.belong_to = 'SYSTEM_FILM'
-        initialMovie.current = data;
-        setMovies(data);
-        setLoading(false);
-      } catch (err) {
-        setLoading(false);
-        showNotification("error", err.message);
-      }
-    }
-
     if (menuState.cinemaType) {
       fetchTmdbMovie();
-    } else if (!menuState.cinemaType && menuState.activeMenu === 'HotMoviesAndFree') {
-      fetchSystemMovie();
     }
-
   }, [menuState, pageNumber]);
 
   useEffect(() => {
@@ -110,14 +118,9 @@ function Home() {
           credentials: 'include'
         };
 
-        const [systemFilmRes, tmdbFilmRes] = await Promise.all([
-          fetch(`${website_base_url}/api/users/get-user-playlist/system-film`, options),
-          fetch(`${website_base_url}/api/users/get-user-playlist/tmdb-film`, options)
-        ]);
-
         const [systemFilmData, tmdbFilmData] = await Promise.all([
-          systemFilmRes.json(),
-          tmdbFilmRes.json()
+          fetch(`${website_base_url}/api/users/get-user-playlist/system-film`, options).then(res => res.json()),
+          fetch(`${website_base_url}/api/users/get-user-playlist/tmdb-film`, options).then(res => res.json())
         ]);
 
         setPlaylist({
@@ -137,32 +140,79 @@ function Home() {
     }
   }, [menuState.activeMenu]);
 
+  // //film history
+  // useEffect(() => {
+  //   const fetchFilmHistory = async () => {
+  //     const options = {
+  //       method: 'GET',
+  //       credentials: 'include'
+  //     }
+  //     const [systemFilmHistory, tmdbFilmHistory] = await Promise.all([
+  //       fetch(`${website_base_url}/api/watching/get-watching-history/system-film`, options).then(res => res.json()),
+  //       fetch(`${website_base_url}/api/watching/get-watching-history/tmdb-film`, options).then(res => res.json())
+  //     ])
 
-  const handleSearching = (searchValue) => {
-    if (searchValue === "") return;
-    setLoading(true);
-    const options = {
-      method: "GET",
-      headers: {
-        accept: "application/json",
-        Authorization: `Bearer ${access_token}`,
-      },
-    };
+  //     setFilmHistory({
+  //       systemFilm: systemFilmHistory.results,
+  //       tmdbFilm: tmdbFilmHistory.results
+  //     })
+  //   }
+  //   if (menuState.activeMenu === 'History') {
+  //     fetchFilmHistory()
+  //   }
+  // }, [menuState.activeMenu])
 
-    fetch(
-      `https://api.themoviedb.org/3/search/movie?query=${searchValue}&include_adult=false&language=en-US&page=1`,
-      options
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        data.type = menuState.activeMenu;
-        data.belong_to = 'TMDB_FILM'
-        setMovies(data);
+  const handleSearching = (queryParam) => {
+    console.log('queryParam: ', queryParam)
+
+    const searchSystemFilm = async () => {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams(queryParam)
+        const res = await fetch(`${website_base_url}/api/system-films/search?${params}`, {
+          method: "GET",
+          credentials: "include",
+        })
+        const data = await res.json()
+        data.belong_to = 'SYSTEM_FILM'
+        setMovies(data)
+      } catch (err) {
+        console.log(err)
+        showNotification("error", err.message);
+      } finally {
         setLoading(false);
-      })
-      .catch((err) => {
-        setLoading(false);
-      });
+      }
+    }
+
+    const searchTmdbFilm = async () => {
+      setLoading(true);
+      const options = {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          Authorization: `Bearer ${access_token}`,
+        },
+      };
+
+      fetch(`https://api.themoviedb.org/3/search/movie?query=${queryParam.title}&include_adult=false&language=en-US&page=1`, options)
+        .then((res) => res.json())
+        .then((data) => {
+          data.type = menuState.activeMenu;
+          data.belong_to = 'TMDB_FILM'
+          setMovies(data);
+          setLoading(false);
+        })
+        .catch((err) => {
+          setLoading(false);
+        });
+    }
+
+    if (menuState.activeMenu === 'HotMoviesAndFree') {
+      searchSystemFilm()
+    } else if (menuState.activeMenu === 'Trending' || menuState.activeMenu === 'Movie' || menuState.activeMenu === 'TV Show') {
+      searchTmdbFilm()
+    }
+
   };
 
   const resetMovies = () => {
@@ -174,13 +224,10 @@ function Home() {
       <Header
         onSearching={handleSearching}
         onReset={resetMovies}
-        additionalHeaderStyles={{
-          borderBottom: '1px solid gray',
-          borderRadius: '8px'
-        }}
+        activeMenu={menuState.activeMenu}
       />
       <div className="body flex relative mt-[50px] min-h-screen z-10">
-        <SideBar onUpdateActiveMenu={updateActiveMenu} />
+        <SideBar onUpdateActiveMenu={updateActiveMenu} menuState={menuState} />
 
         <div
           className="movie-list-box flex w-full sm:w-[calc(100%-230px)] sm:ml-[230px] min-h-screen rounded-[10px] box-border bg-gradient-to-b px-[3px] from-[#0f0f0f] to-[#1a1a1a] text-white transition-all duration-400 ease-linear relative"
@@ -197,7 +244,7 @@ function Home() {
           )}
 
           {loading && (
-            <div className="absolute top-0 left-0 right-0 h-screen ">
+            <div className="absolute top-0 left-0 right-0 bottom-0 z-[1000] h-screen">
               <PulseAnimation onLoading={loading} />
             </div>
           )}
@@ -209,14 +256,3 @@ function Home() {
 
 export default Home;
 
-{
-  /* <iframe width="560" height="315" src="https://www.youtube.com/embed/gGmaZCZz48g?si=cDLDTXRavMIN83RE" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe> */
-}
-
-//https://api.rophim.tv/v1/movie/casts/yydqspwR
-
-//https://api.rophim.tv/v1/movie/filterV2?countries=&genres=QriAOn&years=&type=&status=&versions=&rating=&networks=&productions=&sort=updated_at&page=1
-
-//https://api.rophim.tv/v1/movie/filterV2?page=1
-
-//https://static.nutscdn.com/vimg/300-0/371719b10c674ec7230ed1583c1c452f.jpg

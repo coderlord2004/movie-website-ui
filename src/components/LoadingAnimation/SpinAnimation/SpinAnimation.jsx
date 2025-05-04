@@ -1,19 +1,8 @@
 import React from 'react'
 
-function SpinAnimation({ onLoading, additionalStyles }) {
+function SpinAnimation() {
   return (
-    <div
-      style={onLoading ? {
-        ...additionalStyles,
-        border: "4px solid white",
-        borderLeftColor: "transparent",
-        borderRightColor: "transparent",
-      } : {
-        display: "none"
-      }}
-      className="w-[30px] h-[30px] flex justify-center items-center rounded-[50%] absolute left-[50%] transform translate-x-[-50%] animate-spinner"
-    >
-    </div>
+    <div className='animate-spinner w-[25px] h-[25px] rounded-[50%] border-y-[4px] border-y-white border-x-[4px] border-x-[transparent]'></div>
   )
 }
 

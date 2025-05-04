@@ -1,19 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, forwardRef } from 'react';
 import styles from './InputBox.module.css';
 
-function InputBox({ id, type, label, refName, validation, error }) {
+const InputBox = forwardRef(({ id, type, label, validation, error }, ref) => {
     const [showPassword, setShowPassword] = useState(false);
 
     return (
         <div className="relative mt-[20px]">
             <input
                 id={id}
-                ref={refName}
+                ref={ref}
                 type={!showPassword ? type : "text"}
                 className={styles.inputElement + ` w-full h-[35px] text-black outline-none p-1 px-3 cursor-pointer `}
                 placeholder=" "
                 {...validation}
-                required
             />
             <label
                 htmlFor={id}
@@ -30,6 +29,6 @@ function InputBox({ id, type, label, refName, validation, error }) {
             {error && <p className="w-full text-red-500 text-right">{error.message}</p>}
         </div>
     );
-}
+});
 
 export default InputBox;

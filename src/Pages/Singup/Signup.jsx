@@ -27,12 +27,12 @@ function Signup() {
         delete data.repassword
         try {
             setLoading(true);
-            const res = await fetch(`http://localhost:8080/identity/users/signup`, {
+            const res = await fetch(`http://localhost:8080/users/signup`, {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(data)
+                body: JSON.stringify(data),
             });
             if (!res.ok) {
                 const errorData = await res.json();

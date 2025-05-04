@@ -3,30 +3,56 @@ import Image from './Image/Image'
 import { useState, useEffect } from 'react';
 import { useNotification } from '../context/NotificationContext';
 import { RiDeleteBin6Line } from "react-icons/ri";
+import { usePageTransition } from '../context/PageTransitionContext';
+import PageTransition from './PageTransition';
 
-export default function UserStat({ allUserData }) {
+const website_base_url = import.meta.env.VITE_WEBSITE_BASE_URL;
+
+export default function UserStat({ allUserData, onUpdateUser, onSetLoading }) {
+    const { pageNumber, setPageNumber, nextPage, previousPage } = usePageTransition()
+
+    const { showNotification } = useNotification()
+
+    const deleteUser = async (userId) => {
+        onSetLoading(true)
+        try {
+            const res = await fetch(`${website_base_url}/admin/delete?userId=${userId}`, {
+                method: "DELETE",
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include'
+            })
+            const data = await res.json()
+            let newUserData = allUserData.filter(user => user.id !== userId)
+            onUpdateUser(newUserData)
+            showNotification('success', data.message)
+        } catch (error) {
+            showNotification('error', error.message)
+        } finally {
+            onSetLoading(false)
+        }
+    }
 
     return (
-        <div>
+        <div className='flex flex-col gap-y-[10px]'>
             <table className="table-fixed w-full mt-5 rounded-xl overflow-hidden bg-[#1F1F1F] text-gray-200">
                 <caption className="font-bold text-xl mb-4 text-white">User Information</caption>
                 <thead className="bg-[#2D2D2D] text-white">
                     <tr className='text-center'>
-                        <th className="py-3 px-4 w-[60px]">Order Number</th>
                         <th className="py-3 px-4 truncate">Avatar</th>
                         <th className="py-3 px-4 truncate">Username</th>
                         <th className="py-3 px-4 truncate">Email</th>
                         <th className="py-3 px-4 truncate">DOB</th>
-                        <th className="py-3 px-4 truncate">Account Created</th>
+                        <th className="py-3 px-4 truncate">Account Created At</th>
                         <th className="py-3 px-4 truncate">IP Address</th>
                         <th className="py-3 px-4 truncate">Country</th>
                         <th className="py-3 px-4 truncate">Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {allUserData ? allUserData.map((user, index) => (
+                    {allUserData.length ? allUserData.map((user, index) => (
                         <tr key={index} className="border-t border-gray-700 hover:bg-[#333333] transition-all duration-200">
-                            <td className="py-3 px-4 text-center w-[60px] font-bold">{index + 1}</td>
                             <td className="py-3 px-4">
                                 <div className='w-full h-full flex justify-center items-center'>
                                     <div className='w-[25px] h-[25px] rounded-[50%] flex justify-center items-center overflow-hidden'>
@@ -46,7 +72,10 @@ export default function UserStat({ allUserData }) {
                                 </div>
                             </td>
                             <td className="py-3 px-4 text-center" title='Delete user'>
-                                <div className='flex justify-center items-center hover:animate-dance cursor-pointer'>
+                                <div
+                                    className='flex justify-center items-center hover:animate-dance cursor-pointer'
+                                    onClick={() => deleteUser(user.id)}
+                                >
                                     <RiDeleteBin6Line style={{
                                         width: '30px',
                                         height: '30px',
@@ -64,6 +93,7 @@ export default function UserStat({ allUserData }) {
                 </tbody>
             </table>
 
+            <PageTransition />
         </div>
     )
 }
