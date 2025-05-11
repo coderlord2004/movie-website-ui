@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { IoBookmarkOutline } from "react-icons/io5"
-import { IoMdHeartEmpty } from "react-icons/io"
 import { IoIosAddCircleOutline } from "react-icons/io"
 import { useNotification } from '../context/NotificationContext'
 import SpinAnimation from './LoadingAnimation/SpinAnimation/SpinAnimation'
+import { RiDeleteBin6Line } from "react-icons/ri";
 
 const website_base_url = import.meta.env.VITE_WEBSITE_BASE_URL
 
-export default function BookmarkAndHeart({ filmId, belongTo }) {
-    const [active, setActive] = useState({ bookmark: null, heart: null })
+export default function Bookmark({ filmId, belongTo }) {
     const [userPlaylist, setUserPlaylist] = useState(null)
     const [isShowAllPlaylist, setShowAllPlaylist] = useState(false)
     const [addPlaylist, setAddPlaylist] = useState(false)
@@ -34,7 +33,7 @@ export default function BookmarkAndHeart({ filmId, belongTo }) {
         }
         if (isShowAllPlaylist)
             fetchAllUserPlaylist()
-    }, [isShowAllPlaylist])
+    }, [isShowAllPlaylist, showNotification])
 
     const handleCreationPlaylist = (e) => {
         e.preventDefault()
@@ -44,11 +43,17 @@ export default function BookmarkAndHeart({ filmId, belongTo }) {
             method: 'POST',
             credentials: 'include'
         })
-            .then(res => res.json())
-            .then(data => {
-                const newPlaylist = {
-
+            .then(async res => {
+                if (!res.ok) {
+                    const errorData = await res.json()
+                    throw new Error(errorData.message)
                 }
+                return res.json()
+            })
+            .then(data => {
+                setUserPlaylist(prev => [...prev, data.results])
+                setAddPlaylist(false)
+                showNotification('success', data.message)
             })
             .catch(err => showNotification('error', err.message))
     }
@@ -90,13 +95,28 @@ export default function BookmarkAndHeart({ filmId, belongTo }) {
         }
     }
 
+    const handleDeleteUserPlaylist = async (playlistId) => {
+        setLoading(playlistId)
+        fetch(`${website_base_url}/api/playlist/delete-user-playlist?playlistId=${playlistId}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        })
+            .then(res => res.json())
+            .then(data => {
+                setUserPlaylist(prev => prev.filter(playlist => playlist.playlistId !== playlistId))
+                showNotification('success', data.message)
+            })
+            .catch(err => showNotification('error', err.message))
+            .finally(() => setLoading(false))
+    }
+
     const playlistModal = isShowAllPlaylist && createPortal(
         <div className='w-screen h-auto border border-white rounded-[8px] flex justify-center items-center z-[3000] fixed top-[50px] right-0 bottom-0 left-0 text-white p-[10px]'>
             <div
                 className='overlay bg-black/70 absolute top-0 right-0 left-0 bottom-0 rounded-[8px] cursor-pointer'
                 onClick={() => setShowAllPlaylist(false)}
             />
-            <div className='globalScrollStyle flex flex-col gap-y-[10px] z-[1000] h-full overflow-y-scroll overflow-x-hidden'>
+            <div className='globalScrollStyle flex flex-col gap-y-[10px] z-[1000] h-full overflow-y-auto overflow-x-hidden p-4'>
                 <h1 className='specialColor text-[120%] font-bold p-[10px] text-center'>Available playlists.</h1>
 
                 {loading === true ? (
@@ -107,12 +127,23 @@ export default function BookmarkAndHeart({ filmId, belongTo }) {
 
                 {userPlaylist && userPlaylist.map((playlist) => (
                     <div
+                        className='flex justify-between items-center gap-x-[5px]'
                         key={playlist.playlistId}
-                        className='commonColor max-h-[50%] flex justify-between items-center min-w-[250px] rounded-[5px] p-[10px] hover:scale-[1.03] hover:text-[yellow] cursor-pointer'
-                        onClick={() => handleAddFilmToPlaylist(playlist.playlistId)}
                     >
-                        <p>{playlist.playlistName}</p>
-                        {loading === playlist.playlistId && <SpinAnimation />}
+                        <div
+                            className='commonColor h-full flex justify-between items-center min-w-[250px] rounded-[5px] p-[10px] hover:scale-[1.03] hover:text-[yellow] cursor-pointer'
+                            onClick={() => handleAddFilmToPlaylist(playlist.playlistId)}
+                        >
+                            <p>{playlist.playlistName}</p>
+                            {loading === playlist.playlistId && <SpinAnimation />}
+                        </div>
+                        <div className='hover:scale-[1.05] transition duration-200 ease-in-out cursor-pointer hover:text-red-600'
+                            onClick={() => handleDeleteUserPlaylist(playlist.playlistId)}
+                        >
+                            <RiDeleteBin6Line style={{
+                                fontSize: "20px",
+                            }} />
+                        </div>
                     </div>
                 ))}
 
@@ -125,7 +156,7 @@ export default function BookmarkAndHeart({ filmId, belongTo }) {
                 </div>
             </div>
         </div>,
-        document.body
+        document.getElementById('root')
     )
 
     const addPlaylistModal = addPlaylist && createPortal(

@@ -8,25 +8,32 @@ import { NotificationProvider } from './context/NotificationContext.jsx';
 import { AuthUserProvider } from './context/AuthUserContext.jsx';
 import { PageTransitionProvider } from './context/PageTransitionContext.jsx';
 
-const buildProvidersTree = (providers) => {
-  return ({ children }) =>
-    providers.reduce((acc, [Provider, props = {}]) => {
-      return <Provider {...props}>{acc}</Provider>;
-    }, children);
-};
+// const buildProvidersTree = (providers) => {
+//   return ({ children }) =>
+//     providers.reduce((acc, [Provider, props = {}]) => {
+//       return <Provider {...props}>{acc}</Provider>;
+//     }, children);
+// };
 
-const ProvidersTree = buildProvidersTree([
-  [BrowserRouter],
-  [PageTransitionProvider],
-  [AuthUserProvider],
-  [NotificationProvider],
-]);
+// const ProvidersTree = buildProvidersTree([
+//   [BrowserRouter],
+//   [NotificationProvider],
+//   [AuthUserProvider],
+//   [PageTransitionProvider],
+// ]);
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <ProvidersTree>
-    <App />
-  </ProvidersTree>
+  <BrowserRouter>
+    <NotificationProvider>
+      <AuthUserProvider>
+        <PageTransitionProvider>
+          <App />
+        </PageTransitionProvider>
+      </AuthUserProvider>
+    </NotificationProvider>
+  </BrowserRouter>
 );
+
 
 reportWebVitals();

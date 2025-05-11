@@ -6,7 +6,7 @@ const image_base_url = import.meta.env.VITE_TMDB_BASE_IMAGE_URL;
 const tmdb_base_url = import.meta.env.VITE_TMDB_BASE_URL;
 const api_key = import.meta.env.VITE_API_KEY;
 
-function TopFilm({ id, filmData }) {
+function TopFilm({ type, filmData }) {
     const [tmdbFilmDetail, setTmdbFilmDetail] = useState(null)
     useEffect(() => {
         const fetchTmdbFilmById = async () => {
@@ -21,17 +21,15 @@ function TopFilm({ id, filmData }) {
         }
 
     }, [filmData])
-
+    console.log('type:', type)
     return (
         <div
-            key={id}
-            className={`transition-all duration-200 relative group overflow-hidden rounded-[10px] w-[calc(100%/4-10px)] h-auto animate-fadeIn`}
+            className={`transition-all duration-200 relative group overflow-hidden rounded-[10px] h-auto animate-fadeIn`}
         >
-
             <div className={`relative overflow-hidden w-full h-auto`}>
                 <div className={`w-full h-[250px] rounded-[10px] animate-skeleton relative`}>
                     <div className='absolute top-[5px] left-[5px] text-white text-[12px] font-normal bg-black/50 rounded-[4px] p-[3px] z-10'>
-                        {filmData.numberOfViews ? (
+                        {type === 'Top view' ? (
                             `${filmData.numberOfViews} views`
                         ) : (
                             `${filmData.numberOfLikes} likes`
@@ -55,11 +53,11 @@ function TopFilm({ id, filmData }) {
                 </div>
 
                 <div
-                    className={`watchNowButton w-[60%] h-auto p-[5px] bg-[yellow] text-black text-center absolute top-[100%] group-hover:top-[77%] left-[50%] transform translate-x-[-50%] rounded-[4px] transition-all duration-200 ease-linear flex justify-center items-center hover:shadow-boxShadow-red text-[90%] font-normal`}
+                    className={`watchNowButton w-[60%] h-auto p-[5px] bg-[yellow] text-black text-center absolute  opacity-0 group-hover:opacity-100 top-[77%] left-[50%] transform translate-x-[-50%] rounded-[4px] transition-all duration-200 ease-linear flex justify-center items-center hover:shadow-boxShadow-red text-[90%] font-normal`}
                 >
                     <Link
                         to={filmData.belongTo === 'TMDB_FILM' ? `/watch-detail/theatrical-movie/${filmData.tmdbId}/` : `/watch-detail/hot-movies/${filmData.systemFilmId}/`}
-                        className="w-full h-full flex justify-start sm:justify-center items-center truncate"
+                        className="w-full h-full flex justify-center items-center truncate text-center"
                     >
                         Watch detail!
                     </Link>

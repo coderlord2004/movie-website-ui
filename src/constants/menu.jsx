@@ -13,7 +13,7 @@ const cinemaMap = {
     [cinemaMenu[2]]: trendingMenu
 }
 
-const adminSideBarMenu = ['Dashboard', 'Users', 'Movies', 'Setting']
+const adminSideBarMenu = ['Dashboard', 'Users', 'Movies']
 const adminSideBarMap = {
     [adminSideBarMenu[0]]: RxDashboard,
     [adminSideBarMenu[1]]: FaRegUserCircle,

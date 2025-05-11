@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { useNotification } from '../../context/NotificationContext.jsx'
-import TextOverflow from '../../components/TextOverflow/TextOverflow.jsx'
+import TextOverflow from '../../components/TextOverflow.jsx'
 import Header from '../../components/Header/Header.jsx'
 import Image from '../../components/Image/Image.jsx'
 import PulseAnimation from '../../components/LoadingAnimation/PulseAnimation/PulseAnimation.jsx'
@@ -70,16 +70,8 @@ function TmdbFilmDetail() {
 
     const saveWatchHistory = async () => {
         try {
-            const response = await fetch(`${website_base_url}/api/watching/save-watching-history`, {
+            const response = await fetch(`${website_base_url}/api/watching/save-watching-history?filmId=${tmdbFilmDetail.id}`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    filmId: tmdbFilmDetail.id,
-                    ownerFilm: "TMDB_FILM",
-                    tmdbId: tmdbFilmId
-                }),
                 credentials: 'include'
             });
 
@@ -89,7 +81,6 @@ function TmdbFilmDetail() {
             }
         } catch (err) {
             console.log(err.message)
-            showNotification('error', err.message);
         }
     }
 
@@ -107,11 +98,42 @@ function TmdbFilmDetail() {
         }
     }
 
+    const handleAddTmdbFilm = async () => {
+        try {
+            const res = await fetch(`${website_base_url}/api/tmdb-films/add?tmdbId=${tmdbFilmId}`, {
+                method: 'POST',
+                credentials: 'include'
+            })
+            const data = await res.json()
+            fetchTmdbFilmDetail()
+        } catch (err) {
+            console.log('error', err.message)
+        }
+    }
+
+    const increaseNumberOfViews = async (duration) => {
+        try {
+            const response = await fetch(`${website_base_url}/films/${tmdbFilmDetail.id}/increase-view?watchedDuration=${duration}&belongTo=TMDB_FILM`, {
+                method: 'POST',
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message);
+            }
+        } catch (err) {
+            console.log(err.message)
+            showNotification('error', err.message);
+        }
+    }
+
     useEffect(() => {
         if (tmdbFilmDetail) {
             saveWatchHistory()
+            increaseNumberOfViews(0.0)
         } else {
-            fetchTmdbFilmDetail()
+            handleAddTmdbFilm()
         }
     }, [tmdbFilmDetail])
 
@@ -223,6 +245,8 @@ function TmdbFilmDetail() {
                                     <span>{movieData.movieDetail.runtime} minutes</span>
                                     <span>•</span>
                                     <span>{movieData.movieDetail.vote_average.toFixed(1)} ({movieData.movieDetail.vote_count} votes)</span>
+                                    <span>•</span>
+                                    <span className='text-[yellow]'>{tmdbFilmDetail ? tmdbFilmDetail.numberOfViews : 0} views</span>
                                 </motion.div>
 
                                 <motion.div

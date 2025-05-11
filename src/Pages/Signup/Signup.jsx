@@ -1,12 +1,11 @@
 import { useRef, useEffect, useState } from "react";
 import styles from './Signup.module.css';
-import facebookIcon from '../../assets/facebook.png';
 import googleIcon from '../../assets/google.png';
 import { Link, useNavigate } from "react-router-dom";
 import { useNotification } from "../../context/NotificationContext.jsx";
-import InputBox from "../../components/InputBox/InputBox";
+import InputBox from "../../components/InputBox/InputBox.jsx";
 import { useForm } from 'react-hook-form';
-import SpinAnimation from "../../components/LoadingAnimation/SpinAnimation/SpinAnimation";
+import SpinAnimation from "../../components/LoadingAnimation/SpinAnimation/SpinAnimation.jsx";
 
 const website_base_url = import.meta.env.VITE_WEBSITE_BASE_URL;
 
@@ -23,11 +22,12 @@ function Signup() {
 
     let waveElement = null;
 
-    const handlerSignup = async (data) => {
+    const handleSignup = async (data) => {
+        console.log('data:', data)
         delete data.repassword
         try {
             setLoading(true);
-            const res = await fetch(`http://localhost:8080/users/signup`, {
+            const res = await fetch(`${website_base_url}/users/signup`, {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json'
@@ -95,7 +95,7 @@ function Signup() {
                     <p className={styles.typingText + " max-w-[200px] h-auto text-center relative p-0"} ref={typingText}>
                     </p>
                 </div>
-                <form onSubmit={handleSubmit(handlerSignup)} className="min-w-[300px] h-auto border-[1px] border-solid border-white rounded-[10px] p-[8px] relative">
+                <form onSubmit={handleSubmit(handleSignup)} className="min-w-[300px] h-auto border-[1px] border-solid border-white rounded-[10px] p-[8px] relative">
                     <InputBox
                         id="username-input"
                         type="text"
@@ -127,6 +127,15 @@ function Signup() {
                             },
                         })}
                         error={errors.email}
+                    />
+                    <InputBox
+                        id="dateOfBirth"
+                        type="date"
+                        label="Date of birth"
+                        validation={register("dateOfBirth", {
+                            required: "DateOfBirth isn't empty!",
+                        })}
+                        error={errors.dateOfBirth}
                     />
                     <InputBox
                         id="password-input"
@@ -188,7 +197,7 @@ function Signup() {
                         <span className="block absolute left-[50%] top-[-13px] bg-black px-2 transform translate-x-[-50%]">Or</span>
                     </div>
                     <div className="flex mt-[15px] border border-1px border-solid border-black cursor-pointer items-center pl-[8px] p-1 bg-white text-black">
-                        <img src={googleIcon} className="w-[23px]" />
+                        <img src={googleIcon} className="w-[23px]" alt="" />
                         <p className="ml-[5px]">Signup with Google</p>
                     </div>
                 </form>

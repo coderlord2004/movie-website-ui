@@ -1,22 +1,32 @@
-import { useState, memo } from "react";
-import { useNotification } from "../../context/NotificationContext.jsx";
-import styles from './SideBar.module.css';
-import { cinemaMenu, linkIcon, userActivitiesMenu } from '../../constants/menu';
+import { useState } from "react";
+import { cinemaMenu, linkIcon, userActivitiesMenu } from '../constants/menu';
 import { FaAngleRight, FaAngleDown, FaPhotoFilm } from "react-icons/fa6";
 import { MdMovieFilter } from "react-icons/md";
+import { MdOutlineMenuOpen, MdClose } from "react-icons/md";
 
 function SideBar({ onUpdateActiveMenu, menuState }) {
     const [isCinemaOpen, setCinemaOpen] = useState(true);
-    const { showNotification } = useNotification();
-
+    const [isOpenSideBar, setOpenSideBar] = useState(false);
     const handleMenuClick = (tab) => {
         onUpdateActiveMenu(tab);
     };
 
     return (
-        <div className={`${styles.sideBar} w-[230px] h-full bg-gradient-to-b from-[#0f0f0f] to-[#1a1a1a] fixed top-[50px] z-50 shadow-lg flex flex-col py-4 px-2 overflow-y-auto left-[-100%] sm:left-0`}>
+        <div className={`w-[230px] h-full bg-gradient-to-b from-[#0f0f0f] to-[#1a1a1a] fixed top-[50px] z-50 shadow-lg flex flex-col py-4 px-2 overflow-y-auto ${isOpenSideBar ? 'left-0' : 'left-[-100%]'} sm:left-0 animate-moveToRight transition-all duration-300 ease-in-out`}>
+            <div
+                className={`fixed top-[50px] left-0 ${isOpenSideBar ? 'hidden' : 'block'} sm:hidden text-white text-[30px] cursor-pointer hover:scale-[1.2] transition-all duration-200 ease-linear`}
+                onClick={() => setOpenSideBar(!isOpenSideBar)}
+            >
+                <MdOutlineMenuOpen />
+            </div>
 
-            {/* Hot movies and Free */}
+            <div
+                className={`fixed top-[53px] right-[3px] ${isOpenSideBar ? 'block' : 'hidden'} sm:hidden text-white text-[30px] cursor-pointer hover:scale-[1.2] transition-all duration-200 ease-linear`}
+                onClick={() => setOpenSideBar(!isOpenSideBar)}
+            >
+                <MdClose />
+            </div>
+
             <div
                 className="w-full py-3 px-4 mb-4 bg-gray-800 rounded-lg cursor-pointer flex justify-center items-center hover:bg-gray-700 transition-all"
                 onClick={() => handleMenuClick('HotMoviesAndFree')}

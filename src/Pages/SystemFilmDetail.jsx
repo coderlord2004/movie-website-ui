@@ -4,7 +4,6 @@ import { useNotification } from '../context/NotificationContext.jsx';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaRegThumbsUp, FaThumbsUp, FaRegThumbsDown, FaThumbsDown } from 'react-icons/fa';
 import PulseAnimation from '../components/LoadingAnimation/PulseAnimation/PulseAnimation.jsx';
-import SpinAnimation from '../components/LoadingAnimation/SpinAnimation/SpinAnimation.jsx';
 import Comment from '../components/Comment.jsx';
 import { useUserContext } from '../context/AuthUserContext.jsx';
 import formatDate from '../utils/formatDate.js';
@@ -24,8 +23,8 @@ function SystemFilmDetail() {
     const [isUpdateData, setIsUpdateData] = useState(false)
     const { authUser } = useUserContext()
     const videoRef = useRef(null);
-    console.log('authUser', authUser)
-    console.log('systemFilmDetail', systemFilmDetail)
+    const watchedDuration = useRef(0);
+
     useEffect(() => {
         const fetchFilmDetail = async () => {
             try {
@@ -110,18 +109,10 @@ function SystemFilmDetail() {
         }
     };
 
-    const saveWatchHistory = async () => {
+    const saveWatchingHistory = async () => {
         try {
-            const response = await fetch(`${website_base_url}/api/watching/save-watching-history`, {
+            const response = await fetch(`${website_base_url}/api/watching/save-watching-history?filmId=${systemFilmId}`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    filmId: systemFilmId,
-                    ownerFilm: "SYSTEM_FILM",
-                    tmdbId: ""
-                }),
                 credentials: 'include'
             });
 
@@ -136,6 +127,8 @@ function SystemFilmDetail() {
     }
 
     const saveWatchedDuration = async (duration) => {
+        console.log('duration', duration)
+        watchedDuration.current = duration
         try {
             const response = await fetch(`${website_base_url}/api/watching/save-watched-duration/${systemFilmId}?watchedDuration=${duration}`, {
                 method: 'GET',
@@ -153,9 +146,9 @@ function SystemFilmDetail() {
     }
 
     const increaseNumberOfViews = async (duration) => {
-        // if (duration < 0.5 * systemFilmDetail.systemFilmData.totalDuration) return
+        if (duration < 0.5 * systemFilmDetail.systemFilmData.totalDurations) return
         try {
-            const response = await fetch(`${website_base_url}/films/${systemFilmId}/increase-view?watchedDuration=${duration}`, {
+            const response = await fetch(`${website_base_url}/films/${systemFilmId}/increase-view?watchedDuration=${duration}&belongTo=SYSTEM_FILM`, {
                 method: 'POST',
                 credentials: 'include'
             });
@@ -210,7 +203,7 @@ function SystemFilmDetail() {
                 <motion.button
                     onClick={() => {
                         toggleVideoPlay()
-                        saveWatchHistory()
+                        saveWatchingHistory()
                     }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -267,6 +260,11 @@ function SystemFilmDetail() {
                                 ref={videoRef}
                                 controls
                                 autoPlay
+                                onLoadedMetadata={() => {
+                                    if (videoRef.current) {
+                                        videoRef.current.currentTime = watchedDuration.current;
+                                    }
+                                }}
                                 className="w-full max-h-[400px] rounded-lg shadow-xl"
                                 src={systemFilmDetail.systemFilmData.videoPath}
                             />
@@ -329,7 +327,7 @@ function SystemFilmDetail() {
                             >
                                 <span>{formatDate(systemFilmDetail.systemFilmData.releaseDate)}</span>
                                 <span>•</span>
-                                <span>{systemFilmDetail.systemFilmData.numberOfViews} views</span>
+                                <span className='text-[yellow]'>{systemFilmDetail.systemFilmData.numberOfViews} views</span>
                             </motion.div>
 
                             <motion.div
@@ -412,7 +410,7 @@ function SystemFilmDetail() {
                 {/* Comment */}
                 <Comment systemFilmData={systemFilmDetail.systemFilmData} onUpdateData={() => setIsUpdateData(!isUpdateData)} />
             </div>
-        </div >
+        </div>
     )
 }
 

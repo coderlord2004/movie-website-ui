@@ -5,28 +5,11 @@ import { useNotification } from '../context/NotificationContext'
 import CropModal from '../components/CropModal';
 import convertDataURLtoFile from '../utils/convertDataURLtoFile';
 import getCroppedImg from '../utils/cropImage';
-import { useParams } from 'react-router-dom';
 
 const website_base_url = import.meta.env.VITE_WEBSITE_BASE_URL;
-const genreOptions = [
-    "Action",
-    "Comedy",
-    "Drama",
-    "Fantasy",
-    "Horror",
-    "Romance",
-    "Sci-fi",
-    "Thriller"
-];
 
-
-function UpdateSystemFilm() {
-    const { systemFilmId } = useParams()
-    const formData = useRef({
-        adult: false,
-        title: null,
-        overview: null,
-        releaseDate: null,
+function UploadSystemFilm() {
+    const mediaFiles = useRef({
         backdrop: null,
         poster: null,
         video: null
@@ -40,7 +23,7 @@ function UpdateSystemFilm() {
     const [loading, setLoading] = useState(false);
     const [genreSelection, setGenreSelection] = useState(['']);
     const { showNotification } = useNotification()
-    console.log('genreSelection:', genreSelection)
+
     const videoRef = useRef(null)
 
     const [cropModal, setCropModal] = useState({
@@ -63,7 +46,7 @@ function UpdateSystemFilm() {
     const handleCropDone = async (croppedAreaPixels) => {
         try {
             const croppedImage = await getCroppedImg(cropModal.image, croppedAreaPixels);
-            formData.current[cropModal.type] = convertDataURLtoFile(croppedImage, `${cropModal.type}.jpg`);
+            mediaFiles.current[cropModal.type] = convertDataURLtoFile(croppedImage, `${cropModal.type}.jpg`);
             setPreviewImages(prev => ({
                 ...prev,
                 [cropModal.type]: croppedImage
@@ -92,7 +75,7 @@ function UpdateSystemFilm() {
                     ...prev,
                     video: videoUrl
                 }));
-                formData.current.video = files[0];
+                mediaFiles.current.video = files[0];
             } else {
                 const reader = new FileReader();
                 reader.onload = (event) => {
@@ -123,17 +106,17 @@ function UpdateSystemFilm() {
         form.append('releaseDate', e.target.releaseDate.value);
         form.append('adult', e.target.adult.checked);
         form.append('totalDurations', videoRef.current.duration);
-        genreSelection.forEach(genre => {
+        genreSelection.forEach((genre, index) => {
             if (genre) {
                 form.append('genres', genre);
             }
         });
-        form.append('backdrop', formData.current.backdrop);
-        form.append('poster', formData.current.poster);
-        form.append('video', formData.current.video);
+        form.append('backdrop', mediaFiles.current.backdrop);
+        form.append('poster', mediaFiles.current.poster);
+        form.append('video', mediaFiles.current.video);
 
-        fetch(`${website_base_url}/admin/update/system-film/${systemFilmId}`, {
-            method: "PUT",
+        fetch(`${website_base_url}/admin/upload/system-film`, {
+            method: "POST",
             body: form,
             credentials: "include"
         })
@@ -142,41 +125,6 @@ function UpdateSystemFilm() {
             .catch(err => showNotification('error', err.message))
             .finally(() => setLoading(false));
     };
-
-    useEffect(() => {
-        const fetchFilmDetail = async () => {
-            setLoading(true)
-            try {
-                const options = {
-                    method: 'GET',
-                    credentials: 'include'
-                }
-                const res = await fetch(`${website_base_url}/api/system-films/${systemFilmId}/detail`, options)
-                if (!res.ok) {
-                    const errorData = await res.json()
-                    throw new Error(errorData.message)
-                }
-                const data = await res.json()
-                const film = data.results
-                formData.current = {
-                    adult: film.adult ?? null,
-                    title: film.title ?? null,
-                    overview: film.overview ?? null,
-                    releaseDate: film.releaseDate ?? null,
-                    backdrop: null,
-                    poster: null,
-                    video: null
-                };
-                console.log('form data:', formData.current)
-                setGenreSelection(data.results.genres)
-            } catch (error) {
-                showNotification('error', error.message)
-            } finally {
-                setLoading(false)
-            }
-        }
-        fetchFilmDetail()
-    }, [systemFilmId, showNotification])
 
     useEffect(() => {
         return () => {
@@ -194,11 +142,12 @@ function UpdateSystemFilm() {
                 <div className="bg-gray-800 rounded-xl shadow-2xl overflow-hidden">
                     {/* Form Header */}
                     <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-6">
-                        <h1 className="text-3xl font-bold text-white">Update Film</h1>
-                        <p className="text-blue-100 mt-1">Fill in the details below to update this film</p>
+                        <h1 className="text-3xl font-bold text-white">Upload New Film</h1>
+                        <p className="text-blue-100 mt-1">Fill in the details below to add a new film</p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="p-6 space-y-8">
+                        {/* Basic Info Section */}
                         <div className="space-y-6">
                             <h2 className="text-xl font-semibold text-gray-200 border-b border-gray-700 pb-2">
                                 Film Information
@@ -210,10 +159,6 @@ function UpdateSystemFilm() {
                                     <input
                                         type="checkbox"
                                         name="adult"
-                                        defaultValue={formData.current.adult || ''}
-                                        onChange={(e) => {
-                                            formData.current.title = e.target.value
-                                        }}
                                         className="h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500 bg-gray-700 border-gray-600"
                                     />
                                     <span className="ml-3 text-gray-300">This film contains adult content</span>
@@ -226,10 +171,6 @@ function UpdateSystemFilm() {
                                 <input
                                     type="text"
                                     name="title"
-                                    defaultValue={formData.current.title || ''}
-                                    onChange={(e) => {
-                                        formData.current.title = e.target.value
-                                    }}
                                     className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white placeholder-gray-400 transition"
                                     placeholder="Enter film title"
                                     required
@@ -241,10 +182,6 @@ function UpdateSystemFilm() {
                                 <label className="block text-sm font-medium text-gray-400 mb-1">Overview *</label>
                                 <textarea
                                     name="overview"
-                                    defaultValue={formData.current.overview || ''}
-                                    onChange={(e) => {
-                                        formData.current.overview = e.target.value
-                                    }}
                                     className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white placeholder-gray-400 transition min-h-[120px]"
                                     placeholder="Brief description of the film"
                                     required
@@ -257,7 +194,6 @@ function UpdateSystemFilm() {
                                 <input
                                     type="date"
                                     name="releaseDate"
-                                    defaultValue={formData.current.releaseDate || ''}
                                     className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white transition"
                                     required
                                 />
@@ -286,7 +222,7 @@ function UpdateSystemFilm() {
                                             accept="image/*"
                                             onChange={handleFileChange}
                                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                            required={formData.current.backdrop === null}
+                                            required={mediaFiles.current.backdrop === null}
                                         />
                                     </div>
                                     {previewImages.backdrop && (
@@ -312,13 +248,13 @@ function UpdateSystemFilm() {
                                             accept="image/*"
                                             onChange={handleFileChange}
                                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                            required={formData.current.poster === null}
+                                            required={mediaFiles.current.poster === null}
                                         />
                                     </div>
                                     {previewImages.poster && (
                                         <img
                                             src={previewImages.poster}
-                                            alt="Backdrop Preview"
+                                            alt="Poster Preview"
                                             className="w-full h-auto object-cover rounded-[8px]"
                                         />
                                     )}
@@ -340,7 +276,7 @@ function UpdateSystemFilm() {
                                         accept="video/*"
                                         onChange={handleFileChange}
                                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                        required={formData.current.video === null}
+                                        required={mediaFiles.current.video === null}
                                     />
                                 </div>
                                 {previewImages.video && (
@@ -369,14 +305,15 @@ function UpdateSystemFilm() {
                                             className="flex-1 px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white cursor-pointer"
                                             required
                                         >
-                                            {genreOptions.map((genre) => (
-                                                <option
-                                                    value={genre}
-                                                    selected={ele === genre}
-                                                >
-                                                    {genre}
-                                                </option>
-                                            ))}
+                                            <option value="">Select Genre</option>
+                                            <option value="action">Action</option>
+                                            <option value="comedy">Comedy</option>
+                                            <option value="drama">Drama</option>
+                                            <option value="fantasy">Fantasy</option>
+                                            <option value="horror">Horror</option>
+                                            <option value="romance">Romance</option>
+                                            <option value="sci-fi">Sci-Fi</option>
+                                            <option value="thriller">Thriller</option>
                                         </select>
                                         {genreSelection.length > 1 && (
                                             <button
@@ -412,12 +349,12 @@ function UpdateSystemFilm() {
                                 {loading ? (
                                     <>
                                         <FiLoader className="animate-spin mr-2" />
-                                        Updating...
+                                        Uploading...
                                     </>
                                 ) : (
                                     <>
                                         <FiUpload className="mr-2" />
-                                        Update this Film
+                                        Upload Film
                                     </>
                                 )}
                             </button>
@@ -433,4 +370,4 @@ function UpdateSystemFilm() {
     );
 }
 
-export default UpdateSystemFilm;
+export default UploadSystemFilm;

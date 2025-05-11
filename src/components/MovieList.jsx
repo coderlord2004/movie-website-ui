@@ -1,5 +1,5 @@
 import React from 'react'
-import SpecialMovie from '../components/SpecialMovie/SpecialMovie'
+import SpecialMovie from '../components/SpecialMovie'
 import Movie from './Movie/Movie'
 import PageTransition from './PageTransition'
 import { cinemaMenu, cinemaMap } from '../constants/menu'

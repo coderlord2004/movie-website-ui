@@ -95,7 +95,6 @@ export default function Comment({ systemFilmData, onUpdateData }) {
             if (!res.ok) throw new Error(await res.text());
             const data = await res.json();
 
-            onUpdateData()
             const updatedComments = comments.map(comment => {
                 if (isReply && comment.childComments) {
                     const updatedChildren = comment.childComments.map(child => {

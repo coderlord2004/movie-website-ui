@@ -1,5 +1,4 @@
 import React from 'react';
-import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Tooltip from './Tooltip';
 import Image from './Image/Image';
@@ -7,7 +6,6 @@ import PageTransition from './PageTransition';
 import { IoIosAddCircleOutline } from "react-icons/io";
 import { LuPencilLine } from "react-icons/lu";
 import { RiDeleteBin6Line } from "react-icons/ri";
-import { BiDetail } from "react-icons/bi";
 import { useNotification } from '../context/NotificationContext';
 
 const website_base_url = import.meta.env.VITE_WEBSITE_BASE_URL;
@@ -49,21 +47,15 @@ export default function MovieStat({ movies, onUpdateMovies, loading, onSetLoadin
                 </Link>
             </div>
 
-            <div className='flex items-center w-full h-full gap-[7px] flex-wrap'>
+            <div className='flex items-center w-full h-full gap-x-[10px] flex-wrap'>
                 {movies.length > 0 ? (
                     movies.map(movie => (
                         <div
                             key={movie.id}
-                            className="min-w-[calc(100%/3-7px)] h-[200px] flex justify-between items-center bg-gray-800 rounded-[10px]  mb-[20px] cursor-pointer hover:scale-[1.04] transition-all duration-200 ease-in-out relative group"
+                            className="min-w-[calc(100%/3-7px)] h-[200px] flex justify-between items-center bg-gray-800 rounded-[10px] mb-[20px] cursor-pointer hover:scale-[1.04] transition-all duration-200 ease-in-out relative group"
                         >
                             <Image id={movie.systemFilmId} title={movie.title} src={movie.posterPath} />
                             <div className='absolute top-[15px] right-[15px] w-auto flex gap-[4px] text-[140%] opacity-0 group-hover:opacity-100 transition-all duration-300 ease-in-out bg-black/70 p-[5px] rounded-[10px]'>
-                                <Link to={`/watch-detail/hot-movies/${movie.systemFilmId}/`} className='hover:scale-[1.04] transition-all duration-200 ease-in-out hover:text-[yellow]'>
-                                    <Tooltip text='watch detail' >
-                                        <BiDetail />
-                                    </Tooltip>
-                                </Link>
-
                                 <div onClick={() => handleDeleteFilm(movie.systemFilmId)} className='hover:scale-[1.04] transition-all duration-200 ease-in-out hover:text-[red]'>
                                     <Tooltip text='delete movie' >
                                         <RiDeleteBin6Line title='delete movie' />

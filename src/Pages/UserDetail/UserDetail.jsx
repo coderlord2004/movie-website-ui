@@ -12,7 +12,7 @@ const UserDetail = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { showNotification } = useNotification();
-  const { authUser } = useUserContext();
+  const { authUser, saveAuthUser } = useUserContext();
 
   const authenticatePassword = (e) => {
     const fetchPassword = async () => {
@@ -85,8 +85,9 @@ const UserDetail = () => {
         throw new Error(errData.message || "Failed to upload avatar.");
       }
 
-      const result = await res.json();
-      showNotification("success", result.message || "Avatar updated successfully!");
+      const data = await res.json();
+      saveAuthUser(data.results);
+      showNotification("success", data.message || "Avatar updated successfully!");
 
       setAvatarFile(null);
     } catch (err) {

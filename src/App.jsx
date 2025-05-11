@@ -2,14 +2,14 @@ import "./App.css";
 import { Routes, Route } from "react-router-dom";
 import Home from "./Pages/Home/Home.jsx";
 import Login from "./Pages/Login/Login.jsx";
-import Signup from "./Pages/Singup/Signup.jsx";
+import Signup from "./Pages/Signup/Signup.jsx";
 import "./index.css";
 import UserDetail from "./Pages/UserDetail/UserDetail.jsx";
 import TmdbFilmDetail from "./Pages/TmdbFilmDetail/TmdbFilmDetail.jsx";
 import DemoPage from "./Pages/DemoPage/DemoPage.jsx";
 import WatchFilm from "./Pages/WatchFilm/WatchFilm.jsx";
 import Admin from "./Pages/Admin/Admin.jsx";
-import UploadFilm from "./Pages/UploadFilm/UploadFilm.jsx";
+import UploadSystemFilm from "./Pages/UploadSystemFilm.jsx";
 import RouteTitleManager from "./RouteTitleManager.jsx";
 import SystemFilmDetail from "./Pages/SystemFilmDetail.jsx";
 import UpdateSystemFilm from "./Pages/UpdateSystemFilm.jsx";
@@ -34,7 +34,7 @@ function App() {
           element={<SystemFilmDetail />}
         />
         <Route path="/watch/:videoKey" element={<WatchFilm />} />
-        <Route path="/admin/upload-film" element={<UploadFilm />} />
+        <Route path="/admin/upload-film" element={<UploadSystemFilm />} />
         <Route path="/admin/update-film/:systemFilmId" element={<UpdateSystemFilm />} />
       </Routes>
     </>

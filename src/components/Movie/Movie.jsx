@@ -1,9 +1,5 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import BookMarkIcon from '../BookMarkIcon/BookMarkIcon'
-import HeartIcon from '../HeartIcon/HeartIcon'
-import { IoBookmarkOutline } from "react-icons/io5";
-import { IoMdHeartEmpty } from "react-icons/io";
 import Bookmark from '../Bookmark';
 
 const image_base_url = import.meta.env.VITE_TMDB_BASE_IMAGE_URL;

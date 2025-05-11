@@ -1,30 +1,23 @@
 import { useRef, useEffect, useState } from "react";
 import React from "react";
 import Header from "../../components/Header/Header.jsx";
-import SideBar from "../../components/SideBar/SideBar.jsx";
+import SideBar from "../../components/SideBar.jsx";
 import PulseAnimation from "../../components/LoadingAnimation/PulseAnimation/PulseAnimation.jsx";
 import {
   fetchApiWithParams,
 } from "../../services/api_service/FetchMoviesApi.jsx";
 import { useNotification } from "../../context/NotificationContext.jsx";
-import SpecialMovie from "../../components/SpecialMovie/SpecialMovie.jsx";
-import Movie from "../../components/Movie/Movie.jsx";
 import MovieList from '../../components/MovieList.jsx';
 import Playlist from '../../components/Playlist.jsx';
 import FilmHistory from '../../components/FilmHistory.jsx';
-import { cinemaMenu, cinemaMap } from "../../constants/menu.jsx";
+import { cinemaMap } from "../../constants/menu.jsx";
 import { urlTemplates } from "../../constants/TmdbUrls.jsx";
-import { menuSystemApiMap } from '../../constants/SystemUrls.jsx'
-import PageTransition from "../../components/PageTransition.jsx";
 import { usePageTransition } from "../../context/PageTransitionContext.jsx";
 
 const api_key = import.meta.env.VITE_API_KEY;
 const access_token = import.meta.env.VITE_API_READ_ACCESS_TOKEN;
 
-const image_base_url = import.meta.env.VITE_TMDB_BASE_IMAGE_URL;
-const tmdb_base_url = import.meta.env.VITE_TMDB_BASE_URL;
 const website_base_url = import.meta.env.VITE_WEBSITE_BASE_URL;
-
 
 function Home() {
   const [movies, setMovies] = useState();
@@ -36,10 +29,6 @@ function Home() {
   });
 
   const [playlist, setPlaylist] = useState({
-    systemFilm: null,
-    tmdbFilm: null
-  })
-  const [filmHistory, setFilmHistory] = useState({
     systemFilm: null,
     tmdbFilm: null
   })
@@ -80,7 +69,7 @@ function Home() {
       fetchSystemMovie();
     }
 
-  }, [menuState, pageNumber]);
+  }, [menuState, pageNumber, showNotification]);
 
   useEffect(() => {
     const fetchTmdbMovie = async () => {
@@ -107,7 +96,7 @@ function Home() {
     if (menuState.cinemaType) {
       fetchTmdbMovie();
     }
-  }, [menuState, pageNumber]);
+  }, [menuState, pageNumber, showNotification]);
 
   useEffect(() => {
     const fetchFilmPlaylist = async () => {
@@ -138,29 +127,7 @@ function Home() {
     if (menuState.activeMenu === 'Playlist') {
       fetchFilmPlaylist();
     }
-  }, [menuState.activeMenu]);
-
-  // //film history
-  // useEffect(() => {
-  //   const fetchFilmHistory = async () => {
-  //     const options = {
-  //       method: 'GET',
-  //       credentials: 'include'
-  //     }
-  //     const [systemFilmHistory, tmdbFilmHistory] = await Promise.all([
-  //       fetch(`${website_base_url}/api/watching/get-watching-history/system-film`, options).then(res => res.json()),
-  //       fetch(`${website_base_url}/api/watching/get-watching-history/tmdb-film`, options).then(res => res.json())
-  //     ])
-
-  //     setFilmHistory({
-  //       systemFilm: systemFilmHistory.results,
-  //       tmdbFilm: tmdbFilmHistory.results
-  //     })
-  //   }
-  //   if (menuState.activeMenu === 'History') {
-  //     fetchFilmHistory()
-  //   }
-  // }, [menuState.activeMenu])
+  }, [menuState.activeMenu, showNotification]);
 
   const handleSearching = (queryParam) => {
     console.log('queryParam: ', queryParam)

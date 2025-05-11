@@ -2,20 +2,16 @@ import React, { useEffect, useState, useRef } from "react";
 import Header from "../../components/Header/Header";
 import styles from './DemoPage.module.css';
 import SpinAnimation from "../../components/LoadingAnimation/SpinAnimation/SpinAnimation";
-import TextOverflow from "../../components/TextOverflow/TextOverflow";
-import BookMarkIcon from "../../components/BookMarkIcon/BookMarkIcon.jsx";
-import HeartIcon from "../../components/HeartIcon/HeartIcon.jsx";
+import TextOverflow from "../../components/TextOverflow";
+import { IoBookmarkOutline } from "react-icons/io5";
 import { useNotification } from "../../context/NotificationContext.jsx";
 import { useUserContext } from "../../context/AuthUserContext.jsx";
 import { useNavigate } from "react-router-dom";
 
-const api_key = import.meta.env.VITE_API_KEY;
 const access_token = import.meta.env.VITE_API_READ_ACCESS_TOKEN;
-
 const tmdb_image_base_url = import.meta.env.VITE_TMDB_BASE_IMAGE_URL;
 const tmdb_base_url = import.meta.env.VITE_TMDB_BASE_URL;
 
-const trendingListAll = `${import.meta.env.VITE_TMDB_BASE_URL}3/trending/all/{time_window}`;
 const backgroundImageWidth = 58
 const slideShowImageWidth = 120
 const gapBetweenImages = 20
@@ -27,9 +23,8 @@ function DemoPage() {
     const defaultTrendingElementPosition = useRef(4)
     const currentTrendingElementPosition = useRef(4)
     const backgroundImageBox = useRef(null)
-    const trendingListOverviewContent = useRef(null)
     const { showNotification } = useNotification()
-    const { authUser, saveAuthUser } = useUserContext()
+    const { authUser } = useUserContext()
     const navigate = useNavigate()
 
     useEffect(() => {
@@ -70,6 +65,13 @@ function DemoPage() {
         });
     };
 
+    const checkAuthUser = () => {
+        if (authUser) {
+            navigate('/home')
+        } else {
+            showNotification('error', 'Please login or signup!')
+        }
+    }
     return (
         <div className="w-screen h-screen flex justify-center items-center overflow-hidden relative">
             <Header
@@ -128,13 +130,15 @@ function DemoPage() {
                                         <TextOverflow content={ele.overview} />
                                         <div className="flex justify-between items-center relative p-[5px]">
                                             <div className="flex justify-center">
-                                                <button className={"h-auto w-auto bg-[yellow] text-black p-[5px] p-[3px] rounded-[5px] hover:shadow-[2px_2px_2px_red]"} onClick={() => showNotification('error', 'Please login or signup!')}>
+                                                <button className={"h-auto w-auto bg-[rgb(255,255,0)] text-black p-[5px] rounded-[5px] hover:shadow-[2px_2px_2px_red]"} onClick={checkAuthUser}>
                                                     Watch now!
                                                 </button>
                                             </div>
-                                            <div className="flex justify-center" onClick={() => showNotification('error', 'Please login or signup!')}>
-                                                <BookMarkIcon width="15px" height="15px" />
-                                                <HeartIcon width="15px" height="15px" />
+                                            <div className="flex justify-center" onClick={checkAuthUser}>
+                                                <IoBookmarkOutline style={{
+                                                    fontSize: "25px",
+                                                    color: "white",
+                                                }} />
                                             </div>
                                         </div>
                                     </div>
@@ -175,7 +179,7 @@ function DemoPage() {
                     </div>
                 )
             }
-        </div >
+        </div>
     )
 }
 

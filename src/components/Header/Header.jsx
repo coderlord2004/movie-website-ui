@@ -22,6 +22,8 @@ const dropdownVariants = {
 
 const genres = ['Action', 'Comedy', 'Drama', 'Fantasy', 'Horror', 'Romance', 'Sci-Fi', 'Thriller'];
 
+const website_base_url = import.meta.env.VITE_WEBSITE_BASE_URL;
+
 const Header = ({ onSearching, onReset, activeMenu }) => {
     const navigate = useNavigate();
     const searchInput = useRef(null);
@@ -96,6 +98,35 @@ const Header = ({ onSearching, onReset, activeMenu }) => {
             showNotification('error', err.message);
         }
     };
+
+    useEffect(() => {
+        const fetchUserInfo = async () => {
+            try {
+                const res = await fetch(`${import.meta.env.VITE_WEBSITE_BASE_URL}/users/my-info`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                if (!res.ok && res.status === 401) {
+                    Cookies.remove('auth_user');
+                    window.location.href = '/';
+                    saveAuthUser(null);
+                    return;
+                }
+                if (!res.ok) {
+                    const errorData = await res.json();
+                    throw new Error(errorData.message);
+                }
+                const data = await res.json();
+                Cookies.set('auth_user', JSON.stringify(data.results), { expires: 1 });
+                saveAuthUser(data.results);
+            } catch (err) {
+                console.log(err.message)
+                showNotification('error', err.message);
+            }
+        };
+        if (isLogin && !authUser)
+            fetchUserInfo();
+    }, [authUser, isLogin, saveAuthUser, showNotification]);
 
     return (
         <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900 bg-opacity-60 backdrop-blur-sm shadow-lg border-b border-gray-800">

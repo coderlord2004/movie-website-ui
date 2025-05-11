@@ -23,7 +23,7 @@ function Image({ id = null, title = null, src = null, belongTo = null }) {
     }, [])
 
     if (isError)
-        return "error"
+        return null
 
     return (
         <div
@@ -53,15 +53,23 @@ function Image({ id = null, title = null, src = null, belongTo = null }) {
             )}
 
             {/* Overlay for text */}
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/50 to-transparent p-4">
+            <div className="absolute bottom-0 left-0 right-0 p-4 group">
                 {title ? (
-                    <p className="text-white font-semibold text-lg truncate">{title}</p>
+                    <div className="flex flex-col gap-2 transform translate-y-[50%] group-hover:translate-y-0 transition-transform duration-300">
+                        <p className="text-white font-semibold text-lg truncate">{title}</p>
+                        <Link
+                            to={`/watch-detail/hot-movies/${id}/`}
+                            className="min-w-[45%] inline-block bg-yellow-400 text-black text-sm font-medium py-1 px-3 rounded opacity-0 hover:bg-yellow-300 group-hover:opacity-100 transition-all duration-200"
+                        >
+                            Watch detail
+                        </Link>
+                    </div>
                 ) : tmdbFilmDetail ? (
-                    <div className="flex flex-col gap-2">
+                    <div className="flex flex-col gap-2 transform translate-y-[50%] group-hover:translate-y-0 transition-transform duration-300">
                         <p className="text-white font-semibold text-lg truncate">{tmdbFilmDetail.title}</p>
                         <Link
                             to={`/watch-detail/theatrical-movie/${tmdbFilmDetail.id}/`}
-                            className="min-w-[45%] inline-block bg-yellow-400 text-black text-sm font-medium py-1 px-3 rounded hover:bg-yellow-300 transition"
+                            className="min-w-[45%] inline-block bg-yellow-400 text-black text-sm font-medium py-1 px-3 rounded opacity-0 hover:bg-yellow-300 group-hover:opacity-100 transition-all duration-200"
                         >
                             Watch detail
                         </Link>

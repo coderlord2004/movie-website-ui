@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { IoIosAddCircleOutline } from "react-icons/io";
 import Image from './Image/Image'
 import { useNotification } from '../context/NotificationContext'
@@ -6,10 +6,8 @@ import { FaRegCirclePlay } from "react-icons/fa6";
 import { IoPlaySkipForwardSharp, IoPlaySkipBackSharp } from "react-icons/io5";
 import Tooltip from './Tooltip'
 import LoadingAnimation from './LoadingAnimation/SpinAnimation/SpinAnimation'
+import { createPortal } from 'react-dom'
 
-const image_base_url = import.meta.env.VITE_TMDB_BASE_IMAGE_URL;
-const tmdb_base_url = import.meta.env.VITE_TMDB_BASE_URL;
-const api_key = import.meta.env.VITE_API_KEY;
 const website_base_url = import.meta.env.VITE_WEBSITE_BASE_URL;
 
 export default function Playlist({ systemFilm, tmdbFilm }) {
@@ -66,7 +64,50 @@ export default function Playlist({ systemFilm, tmdbFilm }) {
         }
     };
 
-
+    const playingModal = isPlaying && createPortal(
+        <div className="fixed inset-0 z-[1000] bg-black bg-opacity-90 flex flex-col items-center justify-center px-4">
+            <button
+                onClick={() => setIsPlaying(false)}
+                className="absolute top-4 right-4 text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded"
+            >
+                Close
+            </button>
+            <h2 className="text-white text-lg mb-2">
+                {currentPlaylist[currentIndex]?.title || 'Unknown Title'}
+            </h2>
+            <video
+                key={currentPlaylist[currentIndex]?.videoPath}
+                src={currentPlaylist[currentIndex]?.videoPath}
+                controls
+                autoPlay
+                className="w-full max-w-4xl max-h-[350px] rounded"
+                onEnded={handleEnded}
+            />
+            <div className="flex gap-4 mt-4">
+                <button
+                    onClick={handlePrevious}
+                    disabled={currentIndex === 0}
+                    className="p-[10px] text-white rounded disabled:opacity-50"
+                >
+                    <IoPlaySkipBackSharp style={{
+                        width: '35px',
+                        height: '35px'
+                    }} />
+                </button>
+                <button
+                    onClick={handleNext}
+                    disabled={currentIndex === currentPlaylist.length - 1}
+                    className="p-[10px] text-white rounded disabled:opacity-50"
+                >
+                    <IoPlaySkipForwardSharp style={{
+                        width: '35px',
+                        height: '35px'
+                    }} />
+                </button>
+            </div>
+        </div>,
+        document.body
+    )
 
     return (
         <div className="w-full h-full relative rounded-[10px] flex flex-col gap-y-[12px] overflow-hidden">
@@ -84,7 +125,10 @@ export default function Playlist({ systemFilm, tmdbFilm }) {
             {/* Add Playlist Form */}
             {addPlaylist && (
                 <div className='w-full h-screen border-[1px] border-solid border-white rounded-[8px] flex justify-center items-center z-[1000] fixed top-[50px] right-0 bottom-0 left-0'>
-                    <div className='overlay bg-black/70 absolute top-0 right-0 left-0 bottom-0 rounded-[8px] cursor-pointer' onClick={() => setAddPlaylist(!addPlaylist)}></div>
+                    <div
+                        className='overlay bg-black/70 absolute top-0 right-0 left-0 bottom-0 rounded-[8px] cursor-pointer'
+                        onClick={() => setAddPlaylist(!addPlaylist)}
+                    ></div>
                     <form className='z-[2]' onSubmit={handleCreationPlaylist}>
                         <input
                             type="text"
@@ -157,48 +201,7 @@ export default function Playlist({ systemFilm, tmdbFilm }) {
                 </div>
             </div>
 
-            {isPlaying && (
-                <div className="fixed inset-0 z-[1000] bg-black bg-opacity-90 flex flex-col items-center justify-center px-4">
-                    <button
-                        onClick={() => setIsPlaying(false)}
-                        className="absolute top-4 right-4 text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded"
-                    >
-                        Close
-                    </button>
-                    <h2 className="text-white text-lg mb-2">
-                        {currentPlaylist[currentIndex]?.title || 'Unknown Title'}
-                    </h2>
-                    <video
-                        key={currentPlaylist[currentIndex]?.videoPath}
-                        src={currentPlaylist[currentIndex]?.videoPath}
-                        controls
-                        className="w-full max-w-4xl max-h-[300px] rounded"
-                        onEnded={handleEnded}
-                    />
-                    <div className="flex gap-4 mt-4">
-                        <button
-                            onClick={handlePrevious}
-                            disabled={currentIndex === 0}
-                            className="p-[10px] text-white rounded disabled:opacity-50"
-                        >
-                            <IoPlaySkipBackSharp style={{
-                                width: '35px',
-                                height: '35px'
-                            }} />
-                        </button>
-                        <button
-                            onClick={handleNext}
-                            disabled={currentIndex === currentPlaylist.length - 1}
-                            className="p-[10px] text-white rounded disabled:opacity-50"
-                        >
-                            <IoPlaySkipForwardSharp style={{
-                                width: '35px',
-                                height: '35px'
-                            }} />
-                        </button>
-                    </div>
-                </div>
-            )}
+            {playingModal}
         </div>
     )
 }

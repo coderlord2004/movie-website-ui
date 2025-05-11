@@ -11,7 +11,6 @@ const api_key = import.meta.env.VITE_API_KEY;
 
 export default function Dashboard({ newUserData, onUpdateType, onUpdateLimition, topFilm, popularHours }) {
     const [animateLineChart, setAnimateLineChart] = useState(false)
-    const { showNotification } = useNotification()
     const [limitTemplate, setLimitTemplate] = useState(topFilm.limit)
     const limitInput = useRef(null)
     useEffect(() => {
@@ -69,11 +68,11 @@ export default function Dashboard({ newUserData, onUpdateType, onUpdateLimition,
                     </div>
                 </div>
 
-                <div className='globalScrollStyle flex flex-wrap gap-x-[8px] w-full h-full overflow-x-scroll'>
+                <div className='globalScrollStyle grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-[10px] w-full h-full overflow-x-scroll'>
                     {topFilm.topFilmData && topFilm.topFilmData.map((film, index) => (
                         <TopFilm
-                            index={index}
-                            id={film.tmdbId}
+                            key={film.tmdbId}
+                            type={topFilm.type}
                             filmData={film}
                         />
                     ))}

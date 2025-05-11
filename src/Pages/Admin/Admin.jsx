@@ -19,7 +19,6 @@ function Admin() {
         type: 'Top view',
         limit: 1
     })
-    console.log('top film:', topFilm)
     const [newUserData, setNewUserData] = useState([])
     const [popularHours, setPopularHours] = useState(null)
     const [watchingDate, setWatchingDate] = useState(() => {
@@ -37,20 +36,6 @@ function Admin() {
 
     const [movies, setMovies] = useState([]);
     const [loading, setLoading] = useState(false);
-
-    const formatDate = (isoString) => {
-        const date = new Date(isoString);
-        return date.toLocaleString("en-US", {
-            weekday: "long",
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-            hour12: false,
-        });
-    }
 
     const handleUpdateType = () => {
         setTopFilm(prev => (
@@ -84,7 +69,7 @@ function Admin() {
                         credentials: 'include'
                     });
                 } else {
-                    response = await fetch(`${website_base_url}/films/top-like-film?query=${topFilm.limit}`, {
+                    response = await fetch(`${website_base_url}/films/top-like-film?size=${topFilm.limit}`, {
                         method: 'GET',
                         headers: {
                             'Content-Type': 'application/json',
@@ -93,16 +78,16 @@ function Admin() {
                     });
                 }
                 const data = await response.json();
-                setTopFilm({
-                    ...topFilm,
+                setTopFilm(prev => ({
+                    ...prev,
                     topFilmData: data.results
-                })
+                }))
             } catch (error) {
                 showNotification('error', error.message);
             }
         }
         fetchTopFilm();
-    }, [topFilm.type, topFilm.limit])
+    }, [topFilm.type, topFilm.limit, showNotification])
 
     useEffect(() => {
         const fetchPopularHours = async () => {
@@ -126,12 +111,12 @@ function Admin() {
             }
         }
         fetchPopularHours();
-    }, [watchingDate])
+    }, [showNotification, watchingDate])
 
     useEffect(() => {
         const fetchNewUserData = async () => {
             try {
-                const res = await fetch(`${website_base_url}/admin/users/registrations/monthly?watchDate=${watchingDate}`, {
+                const res = await fetch(`${website_base_url}/admin/users/registrations/monthly`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -149,7 +134,7 @@ function Admin() {
             }
         }
         fetchNewUserData();
-    }, [])
+    }, [showNotification])
 
 
     // users
@@ -176,7 +161,7 @@ function Admin() {
         if (activeMenu === "Users") {
             fetchAllUser();
         }
-    }, [activeMenu, pageNumber])
+    }, [activeMenu, pageNumber, showNotification])
 
     // movies
     useEffect(() => {
@@ -198,7 +183,7 @@ function Admin() {
                 setLoading(false);
             }
         };
-        if ((activeMenu === "Movies" && movies.length === 0) || (activeMenu === 'Movies' && pageNumber > 0)) {
+        if ((activeMenu === "Movies") || (activeMenu === 'Movies' && pageNumber > 0)) {
             fetchMovies();
         }
     }, [activeMenu, pageNumber]);

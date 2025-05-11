@@ -1,6 +1,5 @@
 import React, { createContext, useState, useContext, useCallback } from 'react'
 import Notification from '../components/Notification/Notification'
-import { Link } from 'react-router-dom'
 
 const NotificationContext = createContext({
     notification: null,
@@ -8,22 +7,40 @@ const NotificationContext = createContext({
 })
 
 export const NotificationProvider = ({ children }) => {
-    const [notification, setNotification] = useState(null)
+    const [notification, setNotification] = useState([])
+
+    const removeNotification = useCallback((id) => {
+        const newNotification = notification.filter((item) => item.id !== id)
+        setNotification(newNotification);
+    }, [notification]);
+
     const showNotification = useCallback((type, message) => {
-        setNotification({ type, message });
-        setTimeout(() => setNotification(null), 5000);
+        const id = crypto.randomUUID();
+        const newNotification = {
+            id,
+            type,
+            message,
+        }
+        setNotification(prev => [...prev, newNotification])
+        setTimeout(() => {
+            setNotification(prev => prev.filter(item => item.id !== id));
+        }, 5000);
     }, []);
 
     return (
         <NotificationContext.Provider value={{ showNotification }}>
             {children}
-            {notification && (
-                <Notification
-                    type={notification.type}
-                    message={notification.message}
-                    onClose={() => setNotification(null)}
-                />
-            )}
+            {notification.length !== 0 ? (
+                notification.map((item, index) => (
+                    <Notification
+                        key={item.id}
+                        type={item.type}
+                        message={item.message}
+                        order={index}
+                        onClose={removeNotification}
+                    />
+                ))
+            ) : null}
         </NotificationContext.Provider>
     )
 }
