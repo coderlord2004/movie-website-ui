@@ -7,24 +7,26 @@ import PulseAnimation from '../components/LoadingAnimation/PulseAnimation/PulseA
 import Comment from '../components/Comment.jsx';
 import { useUserContext } from '../context/AuthUserContext.jsx';
 import formatDate from '../utils/formatDate.js';
+import { useNavigate } from 'react-router-dom';
 
 const website_base_url = import.meta.env.VITE_WEBSITE_BASE_URL;
 
 function SystemFilmDetail() {
+    const navigate = useNavigate()
     const { showNotification } = useNotification()
     const { systemFilmId } = useParams();
     const [systemFilmDetail, setSystemFilmDetail] = useState({
         systemFilmData: null,
         reactionState: null
     })
-    console.log('systemFilmDetail', systemFilmDetail)
     const [loading, setLoading] = useState(true)
     const [isVideoPlaying, setIsVideoPlaying] = useState(false)
     const [isUpdateData, setIsUpdateData] = useState(false)
     const { authUser } = useUserContext()
     const videoRef = useRef(null);
+    const iframeRef = useRef(null)
     const watchedDuration = useRef(0);
-
+    console.log('iframeRef:', iframeRef)
     useEffect(() => {
         const fetchFilmDetail = async () => {
             try {
@@ -37,6 +39,7 @@ function SystemFilmDetail() {
                     fetch(`${website_base_url}/api/reaction/get-user-reaction`, options).then(res => res.json())
                 ])
                 let userReactionState = results[1].value.results.find(e => e.film_id === systemFilmId)
+                watchedDuration.current = results[0].value.results.watchedDuration;
                 setSystemFilmDetail({
                     systemFilmData: results[0].value.results,
                     reactionState: userReactionState ? userReactionState.reaction_type : null
@@ -146,7 +149,7 @@ function SystemFilmDetail() {
     }
 
     const increaseNumberOfViews = async (duration) => {
-        if (duration < 0.5 * systemFilmDetail.systemFilmData.totalDurations) return
+        if (duration < 0.5 * systemFilmDetail.systemFilmData && systemFilmDetail.systemFilmData.totalDurations) return
         try {
             const response = await fetch(`${website_base_url}/films/${systemFilmId}/increase-view?watchedDuration=${duration}&belongTo=SYSTEM_FILM`, {
                 method: 'POST',
@@ -173,27 +176,15 @@ function SystemFilmDetail() {
     }
 
     if (!authUser) {
-        return (
-            <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-                <p className="text-gray-300 text-xl">Please log in to view this page.</p>
-            </div>
-        );
-    }
-
-    if (!systemFilmDetail) {
-        return (
-            <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-                <p className="text-gray-300 text-xl">Film not found</p>
-            </div>
-        );
+        navigate('/')
     }
 
     return (
         <div className="min-h-screen bg-gray-900 text-gray-100">
             <div className="relative h-[350px] w-full overflow-hidden">
                 <motion.img
-                    src={systemFilmDetail.systemFilmData.backdropPath}
-                    alt={systemFilmDetail.systemFilmData.title}
+                    src={systemFilmDetail.systemFilmData && systemFilmDetail.systemFilmData.backdropPath}
+                    alt={systemFilmDetail.systemFilmData && systemFilmDetail.systemFilmData.title}
                     className="w-full h-full object-cover"
                     initial={{ opacity: 0, scale: 1.1 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -256,25 +247,40 @@ function SystemFilmDetail() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             </button>
-                            <video
-                                ref={videoRef}
-                                controls
-                                autoPlay
-                                onLoadedMetadata={() => {
-                                    if (videoRef.current) {
-                                        videoRef.current.currentTime = watchedDuration.current;
+                            {systemFilmDetail.systemFilmData && systemFilmDetail.systemFilmData.isUseSrc ? (
+                                <iframe
+                                    ref={iframeRef}
+                                    src={systemFilmDetail.systemFilmData && systemFilmDetail.systemFilmData.videoPath}
+                                    width="100%"
+                                    height="400px"
+                                    allow='autoplay'
+                                    allowfullscreen
+                                    title="HLS Video Player"
+                                    className='bg-slate-700'
+                                ></iframe>
+                            ) : (
+                                <video
+                                    ref={videoRef}
+                                    controls
+                                    autoPlay
+                                    onLoadedMetadata={
+                                        () => {
+                                            if (videoRef.current) {
+                                                videoRef.current.currentTime = watchedDuration.current;
+                                            }
+                                        }
                                     }
-                                }}
-                                className="w-full max-h-[400px] rounded-lg shadow-xl"
-                                src={systemFilmDetail.systemFilmData.videoPath}
-                            />
+                                    className="w-full max-h-[400px] rounded-lg shadow-xl"
+                                    src={systemFilmDetail.systemFilmData && systemFilmDetail.systemFilmData.videoPath}
+                                />
+                            )}
                         </motion.div>
                     </motion.div>
                 )}
             </AnimatePresence>
 
 
-            <div className="container mx-auto px-4 py-8 -mt-20 relative z-10">
+            <div className="mx-auto px-[30px] py-8 -mt-20 relative z-10">
                 <motion.div
                     initial={{ y: 50, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
@@ -283,8 +289,8 @@ function SystemFilmDetail() {
                 >
                     <div className="w-full md:w-1/3 lg:w-1/4">
                         <motion.img
-                            src={systemFilmDetail.systemFilmData.posterPath}
-                            alt={systemFilmDetail.systemFilmData.title}
+                            src={systemFilmDetail.systemFilmData && systemFilmDetail.systemFilmData.posterPath}
+                            alt={systemFilmDetail.systemFilmData && systemFilmDetail.systemFilmData.title}
                             className="rounded-lg shadow-xl w-full h-auto"
                             whileHover={{ scale: 1.02 }}
                             transition={{ type: "spring", stiffness: 400, damping: 10 }}
@@ -299,14 +305,14 @@ function SystemFilmDetail() {
                                 animate={{ opacity: 1 }}
                                 transition={{ delay: 0.3 }}
                             >
-                                {systemFilmDetail.systemFilmData.title}
-                                {systemFilmDetail.systemFilmData.adult && (
+                                {systemFilmDetail.systemFilmData && systemFilmDetail.systemFilmData.title}
+                                {systemFilmDetail.systemFilmData && systemFilmDetail.systemFilmData.adult && (
                                     <span className="ml-2 bg-red-500 text-xs px-2 py-1 rounded-md">18+</span>
                                 )}
                             </motion.h1>
 
                             <div className="flex flex-wrap gap-2">
-                                {systemFilmDetail.systemFilmData.genres.map((genre, index) => (
+                                {systemFilmDetail.systemFilmData && systemFilmDetail.systemFilmData.genres.map((genre, index) => (
                                     <motion.span
                                         key={genre}
                                         className="bg-gray-700 text-gray-200 px-3 py-1 rounded-full text-sm"
@@ -325,9 +331,9 @@ function SystemFilmDetail() {
                                 animate={{ opacity: 1 }}
                                 transition={{ delay: 0.5 }}
                             >
-                                <span>{formatDate(systemFilmDetail.systemFilmData.releaseDate)}</span>
+                                <span>{formatDate(systemFilmDetail.systemFilmData && systemFilmDetail.systemFilmData.releaseDate)}</span>
                                 <span>•</span>
-                                <span className='text-[yellow]'>{systemFilmDetail.systemFilmData.numberOfViews} views</span>
+                                <span className='text-[yellow]'>{systemFilmDetail.systemFilmData && systemFilmDetail.systemFilmData.numberOfViews} views</span>
                             </motion.div>
 
                             <motion.div
@@ -346,7 +352,7 @@ function SystemFilmDetail() {
                                     ) : (
                                         <FaRegThumbsUp className="text-xl" />
                                     )}
-                                    <span>{systemFilmDetail.systemFilmData.numberOfLikes}</span>
+                                    <span>{systemFilmDetail.systemFilmData && systemFilmDetail.systemFilmData.numberOfLikes}</span>
                                 </motion.button>
 
                                 <motion.button
@@ -359,14 +365,14 @@ function SystemFilmDetail() {
                                     ) : (
                                         <FaRegThumbsDown className="text-xl" />
                                     )}
-                                    <span>{systemFilmDetail.systemFilmData.numberOfDislikes}</span>
+                                    <span>{systemFilmDetail.systemFilmData && systemFilmDetail.systemFilmData.numberOfDislikes}</span>
                                 </motion.button>
 
                                 <button className="flex items-center space-x-1 bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg transition">
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-[23px] w-[23px]" viewBox="0 0 20 20" fill="currentColor">
                                         <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd" />
                                     </svg>
-                                    <span>{systemFilmDetail.systemFilmData.numberOfComments} comments</span>
+                                    <span>{systemFilmDetail.systemFilmData && systemFilmDetail.systemFilmData.numberOfComments} comments</span>
                                 </button>
                             </motion.div>
 
@@ -377,7 +383,7 @@ function SystemFilmDetail() {
                                 transition={{ delay: 0.7 }}
                             >
                                 <h2 className="text-xl font-semibold text-white mb-2">Overview</h2>
-                                <p className="text-gray-300 leading-relaxed">{systemFilmDetail.systemFilmData.overview}</p>
+                                <p className="text-gray-300 leading-relaxed">{systemFilmDetail.systemFilmData && systemFilmDetail.systemFilmData.overview}</p>
                             </motion.div>
                         </div>
                     </div>
@@ -394,21 +400,21 @@ function SystemFilmDetail() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-800 rounded-xl p-6">
                         <div>
                             <h3 className="text-lg font-semibold text-gray-300 mb-2">Release Date</h3>
-                            <p className="text-gray-400">{formatDate(systemFilmDetail.systemFilmData.releaseDate)}</p>
+                            <p className="text-gray-400">{formatDate(systemFilmDetail.systemFilmData && systemFilmDetail.systemFilmData.releaseDate)}</p>
                         </div>
                         <div>
                             <h3 className="text-lg font-semibold text-gray-300 mb-2">Belonging</h3>
-                            <p className="text-gray-400">{systemFilmDetail.systemFilmData.belongTo.replace('_', ' ')}</p>
+                            <p className="text-gray-400">{systemFilmDetail.systemFilmData && systemFilmDetail.systemFilmData.belongTo.replace('_', ' ')}</p>
                         </div>
                         <div>
                             <h3 className="text-lg font-semibold text-gray-300 mb-2">Added to System</h3>
-                            <p className="text-gray-400">{formatDate(systemFilmDetail.systemFilmData.createdAt)}</p>
+                            <p className="text-gray-400">{formatDate(systemFilmDetail.systemFilmData && systemFilmDetail.systemFilmData.createdAt)}</p>
                         </div>
                     </div>
                 </motion.div>
 
                 {/* Comment */}
-                <Comment systemFilmData={systemFilmDetail.systemFilmData} onUpdateData={() => setIsUpdateData(!isUpdateData)} />
+                <Comment systemFilmData={systemFilmDetail.systemFilmData && systemFilmDetail.systemFilmData} onUpdateData={() => setIsUpdateData(!isUpdateData)} />
             </div>
         </div>
     )

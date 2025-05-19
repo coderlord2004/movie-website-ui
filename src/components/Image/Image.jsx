@@ -56,10 +56,10 @@ function Image({ id = null, title = null, src = null, belongTo = null }) {
             <div className="absolute bottom-0 left-0 right-0 p-4 group">
                 {title ? (
                     <div className="flex flex-col gap-2 transform translate-y-[50%] group-hover:translate-y-0 transition-transform duration-300">
-                        <p className="text-white font-semibold text-lg truncate">{title}</p>
+                        <p className="text-white font-semibold text-lg truncate bg-black/60 p-[5px]">{title}</p>
                         <Link
                             to={`/watch-detail/hot-movies/${id}/`}
-                            className="min-w-[45%] inline-block bg-yellow-400 text-black text-sm font-medium py-1 px-3 rounded opacity-0 hover:bg-yellow-300 group-hover:opacity-100 transition-all duration-200"
+                            className="m-auto min-w-[45%] inline-block bg-yellow-400 text-black text-center text-sm font-medium py-1 px-3 rounded opacity-0 hover:bg-yellow-300 group-hover:opacity-100 transition-all duration-200"
                         >
                             Watch detail
                         </Link>
@@ -69,7 +69,7 @@ function Image({ id = null, title = null, src = null, belongTo = null }) {
                         <p className="text-white font-semibold text-lg truncate">{tmdbFilmDetail.title}</p>
                         <Link
                             to={`/watch-detail/theatrical-movie/${tmdbFilmDetail.id}/`}
-                            className="min-w-[45%] inline-block bg-yellow-400 text-black text-sm font-medium py-1 px-3 rounded opacity-0 hover:bg-yellow-300 group-hover:opacity-100 transition-all duration-200"
+                            className="m-auto min-w-[45%] inline-block bg-yellow-400 text-black text-center text-sm font-medium py-1 px-3 rounded opacity-0 hover:bg-yellow-300 group-hover:opacity-100 transition-all duration-200"
                         >
                             Watch detail
                         </Link>

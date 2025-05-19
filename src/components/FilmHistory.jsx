@@ -11,7 +11,7 @@ const api_key = import.meta.env.VITE_API_KEY;
 const FilmHistory = () => {
     const [systemFilms, setSystemFilms] = useState([]);
     const [tmdbFilms, setTmdbFilms] = useState([]);
-    console.log('systemFilms', systemFilms);
+
     const { showNotification } = useNotification();
     const [loading, setLoading] = useState(true);
     const fetchSystemFilmHistory = async () => {

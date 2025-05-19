@@ -26,6 +26,10 @@ export default function CropModal({ cropModal, onCancel, onComplete }) {
         setCroppedAreaPixels(croppedPixels);
     };
 
+    if (typeof window === "undefined" || typeof document === "undefined" || !document.body) {
+        return null
+    }
+
     return (
         ReactDOM.createPortal(
             <div

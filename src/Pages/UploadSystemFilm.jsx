@@ -9,6 +9,7 @@ import getCroppedImg from '../utils/cropImage';
 const website_base_url = import.meta.env.VITE_WEBSITE_BASE_URL;
 
 function UploadSystemFilm() {
+    const isUseSrc = useRef(false)
     const mediaFiles = useRef({
         backdrop: null,
         poster: null,
@@ -105,15 +106,25 @@ function UploadSystemFilm() {
         form.append('overview', e.target.overview.value);
         form.append('releaseDate', e.target.releaseDate.value);
         form.append('adult', e.target.adult.checked);
-        form.append('totalDurations', videoRef.current.duration);
+
         genreSelection.forEach((genre, index) => {
             if (genre) {
                 form.append('genres', genre);
             }
         });
-        form.append('backdrop', mediaFiles.current.backdrop);
-        form.append('poster', mediaFiles.current.poster);
-        form.append('video', mediaFiles.current.video);
+
+        form.append('useSrc', isUseSrc.current)
+        if (!isUseSrc.current) {
+            form.append('totalDurations', videoRef.current.duration);
+            form.append('backdrop', mediaFiles.current.backdrop);
+            form.append('poster', mediaFiles.current.poster);
+            form.append('video', mediaFiles.current.video);
+        } else {
+            form.append('totalDurations', e.target.totalSrcDurations.value);
+            form.append('backdropSrc', e.target.backdropSrc.value);
+            form.append('posterSrc', e.target.posterSrc.value);
+            form.append('videoSrc', e.target.videoSrc.value);
+        }
 
         fetch(`${website_base_url}/admin/upload/system-film`, {
             method: "POST",
@@ -222,7 +233,7 @@ function UploadSystemFilm() {
                                             accept="image/*"
                                             onChange={handleFileChange}
                                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                            required={mediaFiles.current.backdrop === null}
+                                            required={isUseSrc === false}
                                         />
                                     </div>
                                     {previewImages.backdrop && (
@@ -248,7 +259,7 @@ function UploadSystemFilm() {
                                             accept="image/*"
                                             onChange={handleFileChange}
                                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                            required={mediaFiles.current.poster === null}
+                                            required={isUseSrc === false}
                                         />
                                     </div>
                                     {previewImages.poster && (
@@ -276,7 +287,7 @@ function UploadSystemFilm() {
                                         accept="video/*"
                                         onChange={handleFileChange}
                                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                        required={mediaFiles.current.video === null}
+                                        required={isUseSrc === false}
                                     />
                                 </div>
                                 {previewImages.video && (
@@ -289,6 +300,79 @@ function UploadSystemFilm() {
                                 )}
                             </div>
                         </div>
+
+                        <div className='w-full h-[2px] bg-slate-500 flex justify-center items-center'>
+                            <b className='bg-gray-800 px-[5px] text-center align-middle'>Or use media source url.</b>
+                        </div>
+
+                        {/* url source */}
+                        <div className='space-y-6'>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-400 mb-1">Backdrop Url</label>
+                                <input
+                                    type="text"
+                                    name="backdropSrc"
+                                    onChange={(e) => {
+                                        if (e.target.value) {
+                                            console.log(e.target.value)
+                                            isUseSrc.current = true
+                                        }
+                                    }}
+                                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white placeholder-gray-400 transition"
+                                    placeholder="Enter film source"
+                                    required={isUseSrc.current}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-400 mb-1">Poster Url</label>
+                                <input
+                                    type="text"
+                                    name="posterSrc"
+                                    onChange={(e) => {
+                                        if (e.target.value) {
+                                            isUseSrc.current = true
+                                        }
+                                    }}
+                                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white placeholder-gray-400 transition"
+                                    placeholder="Enter film source"
+                                    required={isUseSrc.current}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-400 mb-1">Video Url</label>
+                                <input
+                                    type="text"
+                                    name="videoSrc"
+                                    onChange={(e) => {
+                                        if (e.target.value) {
+                                            isUseSrc.current = true
+                                        }
+                                    }}
+                                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white placeholder-gray-400 transition"
+                                    placeholder="Enter film source"
+                                    required={isUseSrc.current}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-400 mb-1">Total durations</label>
+                                <input
+                                    type="number"
+                                    name="totalSrcDurations"
+                                    onChange={(e) => {
+                                        if (e.target.value) {
+                                            isUseSrc.current = true
+                                        }
+                                    }}
+                                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white placeholder-gray-400 transition"
+                                    required={isUseSrc.current}
+                                />
+                            </div>
+                        </div>
+
+                        <div className='w-full h-[2px] bg-slate-500 flex justify-center items-center'></div>
 
                         {/* Genres Section */}
                         <div className="space-y-4">

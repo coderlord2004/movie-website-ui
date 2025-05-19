@@ -31,7 +31,7 @@ function SpecialMovie({ id, movieData, belongTo }) {
         </div>
 
         <div
-          className={`watchNowButton w-auto h-auto p-[5px] bg-[yellow] text-black text-center absolute top-[55%] left-[40px] rounded-[4px] transition-all duration-200 ease-linear flex justify-center items-center hover:shadow-[2px_2px_2px_2px_red] active:shadow-none active:transform active:translate-y-[5px] active:duration-0`}
+          className={`watchNowButton w-auto h-auto p-[5px] bg-[yellow] text-black text-center absolute top-[70%] left-[40px] rounded-[4px] transition-all duration-200 ease-linear flex justify-center items-center hover:shadow-[2px_2px_2px_2px_red] active:shadow-none active:transform active:translate-y-[5px] active:duration-0`}
         >
           <Link
             to={belongTo === 'TMDB_FILM' ? `/watch-detail/theatrical-movie/${movieData.id}/` : `/watch-detail/hot-movies/${movieData.systemFilmId}/`}
@@ -42,7 +42,7 @@ function SpecialMovie({ id, movieData, belongTo }) {
         </div>
       </div>
       <div
-        className={`flex px-[3px] mt-[4px] absolute top-[50%px] left-[40px] transform translate-y-[-50%] justify-between items-center bg-black/50 shadow-[0_0_3px_3px_black]`}
+        className={`flex px-[3px] mt-[4px] absolute top-[50%] left-[40px] transform translate-y-[-50%] justify-between items-center bg-black/50 shadow-[0_0_3px_3px_black]`}
       >
         <p
           className={`w-[80%] mr-[18px] text-[160%] font-medium`}

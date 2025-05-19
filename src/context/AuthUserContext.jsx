@@ -1,6 +1,4 @@
 import React, { useContext, createContext, useState, useEffect, useCallback } from "react";
-import { useNotification } from "./NotificationContext";
-import Cookies from "js-cookie";
 
 export const AuthUserContext = createContext({
     authUser: null,

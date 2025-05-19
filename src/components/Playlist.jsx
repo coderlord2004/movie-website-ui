@@ -17,7 +17,7 @@ export default function Playlist({ systemFilm, tmdbFilm }) {
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentPlaylist, setCurrentPlaylist] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
-    console.log('tmdbFilm:', tmdbFilm)
+    console.log('currentPlaylist:', currentPlaylist)
     const handleCreationPlaylist = (e) => {
         e.preventDefault()
         setLoading(true)
@@ -63,51 +63,68 @@ export default function Playlist({ systemFilm, tmdbFilm }) {
             setIsPlaying(false);
         }
     };
+    console.log('systemFilm:', systemFilm)
+    let playingModal = null
+    if (typeof window !== "undefined" && typeof document !== "undefined" && document.body) {
+        playingModal = isPlaying && createPortal(
+            <div className="fixed inset-0 z-[1000] bg-black bg-opacity-90 flex flex-col items-center justify-center px-4">
+                <button
+                    onClick={() => setIsPlaying(false)}
+                    className="absolute top-4 right-4 text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded"
+                >
+                    Close
+                </button>
+                <h2 className="text-white text-lg mb-2">
+                    {currentPlaylist[currentIndex]?.title || 'Unknown Title'}
+                </h2>
 
-    const playingModal = isPlaying && createPortal(
-        <div className="fixed inset-0 z-[1000] bg-black bg-opacity-90 flex flex-col items-center justify-center px-4">
-            <button
-                onClick={() => setIsPlaying(false)}
-                className="absolute top-4 right-4 text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded"
-            >
-                Close
-            </button>
-            <h2 className="text-white text-lg mb-2">
-                {currentPlaylist[currentIndex]?.title || 'Unknown Title'}
-            </h2>
-            <video
-                key={currentPlaylist[currentIndex]?.videoPath}
-                src={currentPlaylist[currentIndex]?.videoPath}
-                controls
-                autoPlay
-                className="w-full max-w-4xl max-h-[350px] rounded"
-                onEnded={handleEnded}
-            />
-            <div className="flex gap-4 mt-4">
-                <button
-                    onClick={handlePrevious}
-                    disabled={currentIndex === 0}
-                    className="p-[10px] text-white rounded disabled:opacity-50"
-                >
-                    <IoPlaySkipBackSharp style={{
-                        width: '35px',
-                        height: '35px'
-                    }} />
-                </button>
-                <button
-                    onClick={handleNext}
-                    disabled={currentIndex === currentPlaylist.length - 1}
-                    className="p-[10px] text-white rounded disabled:opacity-50"
-                >
-                    <IoPlaySkipForwardSharp style={{
-                        width: '35px',
-                        height: '35px'
-                    }} />
-                </button>
-            </div>
-        </div>,
-        document.body
-    )
+                {currentPlaylist[currentIndex].isUseSrc ? (
+                    <iframe
+                        src={currentPlaylist[currentIndex]?.videoPath}
+                        width="100%"
+                        height="400px"
+                        allow='autoplay'
+                        allowfullscreen
+                        title="HLS Video Player"
+                        className='bg-slate-700'
+                    ></iframe>
+                ) : (
+                    <video
+                        key={currentPlaylist[currentIndex]?.videoPath}
+                        src={currentPlaylist[currentIndex]?.videoPath}
+                        controls
+                        autoPlay
+                        className="w-full max-w-4xl max-h-[350px] rounded"
+                        onEnded={handleEnded}
+                    />
+                )}
+                <div className="flex gap-4 mt-4">
+                    <button
+                        onClick={handlePrevious}
+                        disabled={currentIndex === 0}
+                        className="p-[10px] text-white rounded disabled:opacity-50"
+                    >
+                        <IoPlaySkipBackSharp style={{
+                            width: '35px',
+                            height: '35px'
+                        }} />
+                    </button>
+                    <button
+                        onClick={handleNext}
+                        disabled={currentIndex === currentPlaylist.length - 1}
+                        className="p-[10px] text-white rounded disabled:opacity-50"
+                    >
+                        <IoPlaySkipForwardSharp style={{
+                            width: '35px',
+                            height: '35px'
+                        }} />
+                    </button>
+                </div>
+            </div>,
+            document.body
+        )
+    }
+
 
     return (
         <div className="w-full h-full relative rounded-[10px] flex flex-col gap-y-[12px] overflow-hidden">

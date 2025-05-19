@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useUserContext } from '../../context/AuthUserContext';
 import { useNotification } from '../../context/NotificationContext';
 import logo from '../../assets/Logo.png';
+import NotificationIcon from '../NotificationIcon';
 
 // Animation variants
 const searchVariants = {
@@ -82,7 +83,7 @@ const Header = ({ onSearching, onReset, activeMenu }) => {
 
     const handleLogout = async () => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_WEBSITE_BASE_URL}/auth/logout`, {
+            const res = await fetch(`${website_base_url}/auth/logout`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include'
@@ -102,7 +103,7 @@ const Header = ({ onSearching, onReset, activeMenu }) => {
     useEffect(() => {
         const fetchUserInfo = async () => {
             try {
-                const res = await fetch(`${import.meta.env.VITE_WEBSITE_BASE_URL}/users/my-info`, {
+                const res = await fetch(`${website_base_url}/users/my-info`, {
                     method: 'GET',
                     credentials: 'include'
                 });
@@ -130,13 +131,13 @@ const Header = ({ onSearching, onReset, activeMenu }) => {
 
     return (
         <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900 bg-opacity-60 backdrop-blur-sm shadow-lg border-b border-gray-800">
-            <div className="container mx-auto px-4 h-[50px] flex items-center justify-between">
-                <div className="flex items-center space-x-8">
+            <div className="w-full mx-auto px-4 h-[50px] flex items-center justify-between">
+                <div className="flex justify-center items-center space-x-8">
                     <Link to={authUser ? '/home' : '/'} className="flex items-center space-x-2">
                         <img src={logo} alt="Logo" className="w-8 h-8 rounded-lg" />
-                        <span className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent">
+                        <div className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent">
                             MovieStream
-                        </span>
+                        </div>
                     </Link>
 
                     <nav className="hidden md:flex space-x-6">
@@ -316,7 +317,11 @@ const Header = ({ onSearching, onReset, activeMenu }) => {
                 <div className="flex items-center space-x-4">
                     {isLogin ? (
                         authUser ? (
-                            <div className="relative">
+                            <div className="relative flex gap-x-[10px] justify-center items-center">
+                                {authUser.role === 'USER' && (
+                                    <NotificationIcon />
+                                )}
+
                                 <button
                                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                                     className="flex items-center space-x-2 focus:outline-none"
@@ -325,7 +330,7 @@ const Header = ({ onSearching, onReset, activeMenu }) => {
                                         <img
                                             src={`${authUser.avatarPath}`}
                                             alt="Avatar"
-                                            className="w-8 h-8 rounded-full object-cover border-2 border-purple-500 hover:border-purple-300 transition-all"
+                                            className="w-8 min-w-8 h-8 rounded-full object-cover border-2 border-purple-500 hover:border-purple-300 transition-all"
                                         />
                                     ) : (
                                         <FaUserCircle className="text-3xl text-gray-400 hover:text-white" />
@@ -340,7 +345,7 @@ const Header = ({ onSearching, onReset, activeMenu }) => {
                                             exit="hidden"
                                             variants={dropdownVariants}
                                             transition={{ duration: 0.2 }}
-                                            className="absolute right-0 mt-2 w-56 bg-gray-800 rounded-lg shadow-xl border border-gray-700 overflow-hidden z-50"
+                                            className="absolute top-[100%] right-[-20%] mt-2 w-56 bg-gray-800 rounded-lg shadow-xl border border-gray-700 overflow-hidden z-50"
                                         >
                                             <div className="px-4 py-3 border-b border-gray-700">
                                                 <p className="text-sm font-medium text-white">{authUser.username}</p>

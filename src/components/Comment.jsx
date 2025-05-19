@@ -25,6 +25,8 @@ export default function Comment({ systemFilmData, onUpdateData }) {
     const [editingReplyId, setEditingReplyId] = useState(null)
     const [editingReplyContent, setEditingReplyContent] = useState('')
 
+    console.log('comments:', comments)
+
     useEffect(() => {
         const fetchComments = async () => {
             try {
@@ -66,11 +68,21 @@ export default function Comment({ systemFilmData, onUpdateData }) {
             }
 
             const data = await res.json()
-            onUpdateData();
-            setComments(prev => [data.results, ...prev])
-            e.target.reset()
+            let newComments;
+            if (parentCommentId) {
+                newComments = comments.map(comment => {
+                    if (comment.commentId === parentCommentId) {
+                        comment.childComments = [...comment.childComments, data.results]
+                    }
+                    return comment
+                })
+            } else {
+                newComments = [data.results, ...comments]
+            }
+            console.log('newComments:', newComments)
+            setComments(newComments)
             setReplyingTo(null)
-            showNotification('success', data.message)
+            onUpdateData();
         } catch (err) {
             showNotification('error', err.message)
         } finally {
@@ -118,8 +130,6 @@ export default function Comment({ systemFilmData, onUpdateData }) {
                 setEditingCommentId(null)
                 setEditingContent('')
             }
-
-            showNotification('success', data.message)
         } catch (err) {
             showNotification('error', err.message)
         }
