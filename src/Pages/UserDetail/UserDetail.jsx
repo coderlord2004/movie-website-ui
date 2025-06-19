@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FaUserCircle } from 'react-icons/fa';
+import { FaUserCircle } from "react-icons/fa";
 import Header from "../../components/Header/Header";
 import { useNotification } from "../../context/NotificationContext";
 import { useUserContext } from "../../context/AuthUserContext";
@@ -16,12 +16,18 @@ const UserDetail = () => {
 
   const authenticatePassword = (e) => {
     const fetchPassword = async () => {
-      const res = await fetch(`${import.meta.env.VITE_WEBSITE_BASE_URL}/auth/authenticate-password`, {
-        method: "POST",
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: authUser.email, password: e.target.value }),
-        credentials: 'include'
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_WEBSITE_BASE_URL}/auth/authenticate-password`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: authUser.email,
+            password: e.target.value,
+          }),
+          credentials: "include",
+        },
+      );
       const data = await res.json();
       setAuthenticatedPassword(data.code === 2000);
     };
@@ -35,33 +41,36 @@ const UserDetail = () => {
     const confirmPassword = formData.get("confirmPassword");
 
     if (newPassword !== confirmPassword) {
-      showNotification('error', "Passwords don't match!");
+      showNotification("error", "Passwords don't match!");
       return;
     }
 
     if (!authenticatedPassword) {
-      showNotification('error', "Current password is incorrect!");
+      showNotification("error", "Current password is incorrect!");
       return;
     }
 
     setLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_WEBSITE_BASE_URL}/users/update-password`, {
-        method: "POST",
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: newPassword }),
-        credentials: 'include'
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_WEBSITE_BASE_URL}/users/update-password`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ password: newPassword }),
+          credentials: "include",
+        },
+      );
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.message || "Failed to update password.");
       }
 
       const data = await res.json();
-      showNotification('success', data.message);
+      showNotification("success", data.message);
       setPasswordChangingBox(false);
     } catch (err) {
-      showNotification('error', err.message);
+      showNotification("error", err.message);
     } finally {
       setLoading(false);
     }
@@ -74,11 +83,14 @@ const UserDetail = () => {
     formData.append("avatarFile", avatarFile);
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_WEBSITE_BASE_URL}/users/update`, {
-        method: "POST",
-        body: formData,
-        credentials: "include",
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_WEBSITE_BASE_URL}/users/update`,
+        {
+          method: "POST",
+          body: formData,
+          credentials: "include",
+        },
+      );
 
       if (!res.ok) {
         const errData = await res.json();
@@ -87,7 +99,10 @@ const UserDetail = () => {
 
       const data = await res.json();
       saveAuthUser(data.results);
-      showNotification("success", data.message || "Avatar updated successfully!");
+      showNotification(
+        "success",
+        data.message || "Avatar updated successfully!",
+      );
 
       setAvatarFile(null);
     } catch (err) {
@@ -97,13 +112,13 @@ const UserDetail = () => {
 
   const formatDate = (dateString) => {
     if (!dateString) return "Not set";
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    const options = { year: "numeric", month: "long", day: "numeric" };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100">
-      <Header onSearching={() => { }} onReset={() => { }} />
+      <Header onSearching={() => {}} onReset={() => {}} />
 
       <div className="max-w-4xl mx-auto p-6 mt-[50px]">
         <div className="bg-gray-800 rounded-xl shadow-lg overflow-hidden">
@@ -134,8 +149,17 @@ const UserDetail = () => {
                       }
                     }}
                   />
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                 </label>
               </div>
@@ -147,16 +171,22 @@ const UserDetail = () => {
                   Upload Avatar
                 </button>
               )}
-              <h2 className="text-2xl font-bold text-center mt-4">{authUser?.username || 'Username'}</h2>
+              <h2 className="text-2xl font-bold text-center mt-4">
+                {authUser?.username || "Username"}
+              </h2>
             </div>
 
             {/* Info Section */}
             <div className="md:w-2/3 p-6">
-              <h3 className="text-xl font-semibold mb-4 text-purple-400">User Information</h3>
+              <h3 className="text-xl font-semibold mb-4 text-purple-400">
+                User Information
+              </h3>
               <div className="space-y-4">
                 <div className="flex items-center">
                   <span className="w-32 text-gray-400">Email:</span>
-                  <span className="font-medium">{authUser?.email || 'Not available'}</span>
+                  <span className="font-medium">
+                    {authUser?.email || "Not available"}
+                  </span>
                 </div>
                 <div className="flex items-center">
                   <span className="w-32 text-gray-400">Joined:</span>
@@ -195,11 +225,15 @@ const UserDetail = () => {
               ✕
             </button>
 
-            <h3 className="text-xl font-semibold mb-4 text-center">Change Password</h3>
+            <h3 className="text-xl font-semibold mb-4 text-center">
+              Change Password
+            </h3>
 
             <form onSubmit={handleChangingPassword} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Current Password</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  Current Password
+                </label>
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
@@ -218,12 +252,16 @@ const UserDetail = () => {
                   </button>
                 </div>
                 {!authenticatedPassword && (
-                  <p className="text-red-500 text-sm mt-1">Incorrect password</p>
+                  <p className="text-red-500 text-sm mt-1">
+                    Incorrect password
+                  </p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">New Password</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  New Password
+                </label>
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
@@ -236,7 +274,9 @@ const UserDetail = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Confirm Password</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  Confirm Password
+                </label>
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}

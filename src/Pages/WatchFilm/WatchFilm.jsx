@@ -44,13 +44,13 @@ function WatchFilm() {
             savedTimeList[videoKey] = playerRef.current.getCurrentTime();
             localStorage.setItem(
               "savedTimeList",
-              JSON.stringify(savedTimeList)
+              JSON.stringify(savedTimeList),
             );
           }, 1000);
           intervalIdsList.push(intervalId);
           localStorage.setItem(
             "intervalIdsList",
-            JSON.stringify(intervalIdsList)
+            JSON.stringify(intervalIdsList),
           );
           setLoading(false);
         }}

@@ -15,11 +15,11 @@ module.exports = {
           }
         },
         moveToRight: {
-          '0%': {
-            transform: 'translateX(-550 %) rotate(20deg)'
+          'from': {
+            'transform': 'translateX(-100%)'
           },
-          '100%': {
-            transform: 'translateX(550 %) rotate(20deg)'
+          'to': {
+            'transform': 'translateX(0)'
           }
         },
         skeleton: {
@@ -64,17 +64,35 @@ module.exports = {
           '0%': { top: '-50px' },
           '80%': { top: '20px' },
           '100%': { top: '0px' },
+        },
+        ring: {
+          '0%': {
+            transform: 'rotate(-30deg)'
+          },
+          '20%': {
+            transform: 'rotate(30deg)'
+          },
+          '40%': {
+            transform: 'rotate(-15deg)'
+          },
+          '60%': {
+            transform: 'rotate(15deg)'
+          },
+          '80%': {
+            transform: 'rotate(0)'
+          },
         }
 
       },
       animation: {
         spinner: 'spinner 0.5s ease infinite',
-        moveToRight: 'moveToRight 0.8s linear infinite',
+        moveToRight: 'moveToRight 0.8s ease-out',
         skeleton: 'skeleton 1.5s linear infinite',
         dance: 'dance 0.6s ease-in-out',
         fadeIn: 'fadeIn 0.5s ease-in-out',
         fadeOut: 'fadeOut 0.5s ease-in-out',
-        notify: 'notify 0.5s ease-in-out'
+        notify: 'notify 0.5s ease-in-out',
+        ring: 'ring 1s linear infinite'
       }
     },
   },

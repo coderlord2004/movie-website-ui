@@ -1,7 +1,5 @@
-import '../../index.css'
+import "../../index.css";
 
-function Footer() {
-
-}
+function Footer() {}
 
 export default Footer;

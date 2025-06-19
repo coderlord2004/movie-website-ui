@@ -35,7 +35,10 @@ function App() {
         />
         <Route path="/watch/:videoKey" element={<WatchFilm />} />
         <Route path="/admin/upload-film" element={<UploadSystemFilm />} />
-        <Route path="/admin/update-film/:systemFilmId" element={<UpdateSystemFilm />} />
+        <Route
+          path="/admin/update-film/:systemFilmId"
+          element={<UpdateSystemFilm />}
+        />
       </Routes>
     </>
   );
