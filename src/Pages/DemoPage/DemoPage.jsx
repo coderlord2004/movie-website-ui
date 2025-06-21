@@ -4,6 +4,7 @@ import Footer from "../../components/Footer";
 import { useNotification } from "../../context/NotificationContext";
 import { useUserContext } from "../../context/AuthUserContext";
 import Skeleton from "../../components/LoadingAnimation/Skeleton";
+import { Link } from "react-router-dom";
 
 const access_token = import.meta.env.VITE_API_READ_ACCESS_TOKEN;
 const tmdb_image_base_url = import.meta.env.VITE_TMDB_BASE_IMAGE_URL;
@@ -108,19 +109,25 @@ export default function DemoPage() {
                   {featuredMovie?.overview}
                 </p>
                 <div className="flex space-x-4">
-                  <button
-                    className="px-8 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105"
-                    onClick={() => {
-                      if (!authUser) {
-                        showNotification(
-                          "error",
-                          "Please log in or sign up to continue!",
-                        );
-                      }
-                    }}
-                  >
-                    Play Now
-                  </button>
+                  {authUser ? (
+                    <Link
+                      to={`/watch-detail/theatrical-movie/${featuredMovie?.id}`}
+                      className="px-8 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105"
+                    >
+                      Play Now
+                    </Link>
+                  ) : (
+                    <button
+                      className="px-8 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105"
+                      onClick={() => showNotification(
+                        "error",
+                        "Please log in or sign up to continue!",
+                      )}
+                    >
+                      Play Now
+                    </button>
+                  )}
+
                   <a
                     href="#trending"
                     className="px-8 py-3 bg-gray-800 hover:bg-gray-700 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105"
@@ -161,47 +168,47 @@ export default function DemoPage() {
           >
             {isLoading
               ? Array.from({ length: 10 }).map((_, idx) => (
-                  <Skeleton key={idx} className="h-[120px] rounded-[8px]" />
-                ))
+                <Skeleton key={idx} className="h-[120px] rounded-[8px]" />
+              ))
               : trendingList.map((movie, idx) => (
-                  <div
-                    key={movie.id}
-                    className="group relative rounded-lg overflow-hidden transition-all duration-300 transform hover:scale-105 hover:z-10 cursor-pointer animate-moveToTop"
-                    style={{
-                      animationDelay: `${idx / 10}s`,
-                    }}
-                    onClick={() => {
-                      setFeaturedMovie(movie);
-                      window.scrollTo({
-                        top: 0,
-                        behavior: "smooth",
-                      });
-                    }}
-                  >
-                    <div className="aspect-w-2 aspect-h-3 animate-skeleton">
-                      <img
-                        src={`${tmdb_image_base_url}original/${movie.backdrop_path || movie.poster_path}`}
-                        alt={movie.title || movie.name}
-                        className="w-full h-full object-cover rounded-lg"
-                      />
-                    </div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
-                      <h3 className="text-white font-semibold truncate">
-                        {movie.title || movie.name}
-                      </h3>
-                      <div className="flex justify-between text-sm text-gray-300 mt-1">
+                <div
+                  key={movie.id}
+                  className="group relative rounded-lg overflow-hidden transition-all duration-300 transform hover:scale-105 hover:z-10 cursor-pointer animate-moveToTop"
+                  style={{
+                    animationDelay: `${idx / 10}s`,
+                  }}
+                  onClick={() => {
+                    setFeaturedMovie(movie);
+                    window.scrollTo({
+                      top: 0,
+                      behavior: "smooth",
+                    });
+                  }}
+                >
+                  <div className="aspect-w-2 aspect-h-3 animate-skeleton">
+                    <img
+                      src={`${tmdb_image_base_url}original/${movie.backdrop_path || movie.poster_path}`}
+                      alt={movie.title || movie.name}
+                      className="w-full h-full object-cover rounded-lg"
+                    />
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
+                    <h3 className="text-white font-semibold truncate">
+                      {movie.title || movie.name}
+                    </h3>
+                    <div className="flex justify-between text-sm text-gray-300 mt-1">
+                      <span>
+                        {movie.media_type === "movie" ? "Movie" : "TV Series"}
+                      </span>
+                      {movie.release_date && (
                         <span>
-                          {movie.media_type === "movie" ? "Movie" : "TV Series"}
+                          {new Date(movie.release_date).getFullYear()}
                         </span>
-                        {movie.release_date && (
-                          <span>
-                            {new Date(movie.release_date).getFullYear()}
-                          </span>
-                        )}
-                      </div>
+                      )}
                     </div>
                   </div>
-                ))}
+                </div>
+              ))}
           </div>
         </div>
       </div>
