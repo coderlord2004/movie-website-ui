@@ -84,12 +84,20 @@ module.exports = {
         },
         moveToTop: {
           '0%': {
-            transform: 'translateY(20px)',
+            transform: 'translateY(15px)',
             opacity: '0'
           },
           '100%': {
             transform: 'translateY(0px)',
             opacity: '1'
+          }
+        },
+        shimmer: {
+          '0%': {
+            'background-position': '-200% 0'
+          },
+          '100%': {
+            'background-position': '200% 0'
           }
         }
 
@@ -103,7 +111,8 @@ module.exports = {
         fadeIn: 'fadeIn 0.5s ease-in-out',
         fadeOut: 'fadeOut 0.5s ease-in-out',
         notify: 'notify 0.5s ease-in-out',
-        ring: 'ring 1s linear infinite'
+        ring: 'ring 1s linear infinite',
+        shimmer: 'shimmer 1.5s infinite'
       }
     },
   },

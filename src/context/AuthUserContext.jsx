@@ -1,13 +1,8 @@
-import React, {
-  useContext,
-  createContext,
-  useState,
-  useCallback,
-} from "react";
+import React, { useContext, createContext, useState, useCallback } from "react";
 
 export const AuthUserContext = createContext({
   authUser: null,
-  saveAuthUser: () => { },
+  saveAuthUser: () => {},
 });
 
 export const AuthUserProvider = ({ children }) => {

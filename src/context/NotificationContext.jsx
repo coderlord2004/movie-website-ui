@@ -13,13 +13,13 @@ import Cookies from "js-cookie";
 const NotificationContext = createContext({
   isNewNotification: false,
   notification: null,
-  showNotification: () => { },
+  showNotification: () => {},
 });
 
 export const NotificationProvider = ({ children }) => {
   const [notification, setNotification] = useState([]);
   const [isNewNotification, setNewNotification] = useState(false);
-  const accessToken = Cookies.get('accessToken')
+  const accessToken = Cookies.get("accessToken");
   const removeNotification = useCallback(
     (id) => {
       const newNotification = notification.filter((item) => item.id !== id);
@@ -77,15 +77,15 @@ export const NotificationProvider = ({ children }) => {
       {children}
       {notification.length !== 0
         ? notification.map((item, index) => (
-          <Notification
-            key={item.id}
-            type={item.type}
-            message={item.message}
-            order={index}
-            onClose={removeNotification}
-            redirectUrl={item.redirectUrl}
-          />
-        ))
+            <Notification
+              key={item.id}
+              type={item.type}
+              message={item.message}
+              order={index}
+              onClose={removeNotification}
+              redirectUrl={item.redirectUrl}
+            />
+          ))
         : null}
     </NotificationContext.Provider>
   );
