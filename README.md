@@ -6,17 +6,17 @@ It displays featured movies, allows users to watch trailers or get movie details
 ## 🚀 Features
 
 Build a movie website for entertainment with the following features:
-• Watch movies online
-• Like, dislike and comment on movies
-• Save watch history and playlists
-• Auto-play playlists
-• Log in, log out, sign up for accounts
+- Watch movies online
+- Like, dislike and comment on movies
+- Save watch history and playlists
+- Auto-play playlists
+- Log in, log out, sign up for accounts
 Admin features include:
-• Upload movies
-• Crop images before uploading to the server
-• Perform CRUD operations on uploaded movies and user accounts
-• View dashboard statistics
-• Send real-time notifications to all users when a movie is successfully uploaded
+- Upload movies
+- Crop images before uploading to the server
+- Perform CRUD operations on uploaded movies and user accounts
+- View dashboard statistics
+- Send real-time notifications to all users when a movie is successfully uploaded
 
 ## 🖼️ Live Demo
 https://phimhayyy.vercel.app/
