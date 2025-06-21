@@ -1,18 +1,15 @@
 import { useState, useEffect } from "react";
-import { useUserContext } from "../context/AuthUserContext";
 import { IoIosNotifications } from "react-icons/io";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNotification } from "../context/NotificationContext";
 import SpinAnimation from "./LoadingAnimation/SpinAnimation/SpinAnimation";
 import { TiTickOutline } from "react-icons/ti";
-import { MdClear } from "react-icons/md";
 import { Link } from "react-router-dom";
 import { FaArrowCircleRight } from "react-icons/fa";
 
 const website_base_url = import.meta.env.VITE_WEBSITE_BASE_URL;
 
 export default function NotificationIcon() {
-  const { authUser } = useUserContext();
   const [notifications, setNotifications] = useState([]);
   const [isShowNotification, setShowNotification] = useState(false);
   const [loading, setLoading] = useState(true);

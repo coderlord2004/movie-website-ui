@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef } from "react";
 import { Link } from "react-router-dom";
 import { FaArrowCircleRight } from "react-icons/fa";
 
@@ -13,7 +13,7 @@ const Notification = ({ id, type, message, order, onClose, redirectUrl }) => {
         border: `3px solid ${type === "error" ? "red" : "green"}`,
       }}
     >
-      <p className="w-full h-full text-center align-middle">
+      <p className="w-full h-full text-center align-middle overflow-auto">
         {type === "error" ? "Error: " : ""}
         {message}
       </p>

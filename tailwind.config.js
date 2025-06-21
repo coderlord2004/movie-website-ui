@@ -81,12 +81,23 @@ module.exports = {
           '80%': {
             transform: 'rotate(0)'
           },
+        },
+        moveToTop: {
+          '0%': {
+            transform: 'translateY(20px)',
+            opacity: '0'
+          },
+          '100%': {
+            transform: 'translateY(0px)',
+            opacity: '1'
+          }
         }
 
       },
       animation: {
         spinner: 'spinner 0.5s ease infinite',
         moveToRight: 'moveToRight 0.8s ease-out',
+        moveToTop: 'moveToTop 0.6s ease-out',
         skeleton: 'skeleton 1.5s linear infinite',
         dance: 'dance 0.6s ease-in-out',
         fadeIn: 'fadeIn 0.5s ease-in-out',

@@ -2,8 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 const tmdb_image_base_url = import.meta.env.VITE_TMDB_BASE_IMAGE_URL;
-const image_base_url = import.meta.env.VITE_TMDB_BASE_IMAGE_URL;
-const tmdb_base_url = import.meta.env.VITE_TMDB_BASE_URL;
 const api_key = import.meta.env.VITE_API_KEY;
 
 function Image({ id = null, title = null, src = null, belongTo = null }) {
@@ -22,7 +20,7 @@ function Image({ id = null, title = null, src = null, belongTo = null }) {
     if (belongTo === "TMDB_FILM") {
       fetchTmdbFilmById();
     }
-  }, []);
+  }, [belongTo, id]);
 
   if (isError) return null;
 

@@ -1,31 +1,18 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useState, useEffect } from 'react';
 import Header from "../../components/Header/Header";
-import styles from "./DemoPage.module.css";
-import SpinAnimation from "../../components/LoadingAnimation/SpinAnimation/SpinAnimation";
-import TextOverflow from "../../components/TextOverflow";
-import { IoBookmarkOutline } from "react-icons/io5";
-import { useNotification } from "../../context/NotificationContext.jsx";
-import { useUserContext } from "../../context/AuthUserContext.jsx";
-import { useNavigate } from "react-router-dom";
+import Footer from '../../components/Footer';
+import { useNotification } from '../../context/NotificationContext';
 
 const access_token = import.meta.env.VITE_API_READ_ACCESS_TOKEN;
 const tmdb_image_base_url = import.meta.env.VITE_TMDB_BASE_IMAGE_URL;
 const tmdb_base_url = import.meta.env.VITE_TMDB_BASE_URL;
 
-const backgroundImageWidth = 58;
-const slideShowImageWidth = 120;
-const gapBetweenImages = 20;
-
-function DemoPage() {
+export default function DemoPage() {
   const [trendingList, setTrendingList] = useState([]);
-  const trendingListElements = useRef([]);
-  const trendingListOverviewElements = useRef([]);
-  const defaultTrendingElementPosition = useRef(4);
-  const currentTrendingElementPosition = useRef(4);
-  const backgroundImageBox = useRef(null);
-  const { showNotification } = useNotification();
-  const { authUser } = useUserContext();
-  const navigate = useNavigate();
+  const [featuredMovie, setFeaturedMovie] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const { showNotification } = useNotification()
+  const [trendingType, setTrendingType] = useState('day')
 
   useEffect(() => {
     const options = {
@@ -36,188 +23,158 @@ function DemoPage() {
       },
     };
 
-    fetch(`${tmdb_base_url}3/trending/all/day`, options)
+    fetch(`${tmdb_base_url}3/trending/all/${trendingType}`, options)
       .then((res) => res.json())
       .then((data) => {
-        console.log(data);
         setTrendingList(data.results);
+        setFeaturedMovie(data.results[0]);
+        setIsLoading(false);
       })
-      .catch((err) => alert(err));
-  }, []);
-
-  const handleTrendingListTransition = (index) => {
-    backgroundImageBox.current.style.transform = `translateX(${-index * 100}%)`;
-
-    trendingListOverviewElements.current[index].classList.remove(
-      styles.trendingListOverviewContent,
-    );
-    setTimeout(() => {
-      trendingListOverviewElements.current[index].classList.add(
-        styles.trendingListOverviewContent,
-      );
-    }, 0);
-    currentTrendingElementPosition.current = index;
-    let distance = index - defaultTrendingElementPosition.current;
-
-    trendingListElements.current.forEach((el, i) => {
-      Object.assign(el.style, {
-        margin: `${i === index ? "0 10px" : "0"}`,
-        transition: "transform 0.4s linear",
-        transform: `translateX(${-distance * slideShowImageWidth - gapBetweenImages * (distance - 1)}px) ${i === index ? "scale(1.3)" : ""}`,
-        filter: i === index ? "brightness(1.5)" : "brightness(0.7)",
+      .catch((err) => {
+        alert(err);
+        setIsLoading(false);
       });
-    });
-  };
+  }, [trendingType]);
 
-  const checkAuthUser = () => {
-    if (authUser) {
-      navigate("/home");
-    } else {
-      showNotification("error", "Please login or signup!");
-    }
-  };
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="w-screen h-screen flex justify-center items-center overflow-hidden relative">
+    <div className="min-h-screen bg-gray-900 text-white overflow-x-hidden">
+      {/* Header */}
       <Header
         onSearching={() => showNotification("error", "Please login or signup!")}
         onReset={() => showNotification("error", "Please login or signup!")}
-        additionalHeaderStyles={{
-          backgroundColor: "rgba(0, 0, 0, 0.4)",
-          top: "10px",
-          left: "10px",
-          right: "10px",
-          borderRadius: "10px",
-        }}
-      ></Header>
-      {trendingList.length === 0 ? (
-        <div className="absolute top-0 right-0 left-0 bottom-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <SpinAnimation
-            onLoading={true}
-            style={{
-              width: "30px",
-              height: "30px",
-              border: "4px solid white",
-            }}
-          />
+      />
+
+      <div className="relative h-screen mt-[50px]">
+        <div className="absolute inset-0 z-0">
+          {featuredMovie && (
+            <img
+              src={`${tmdb_image_base_url}original/${featuredMovie.backdrop_path || featuredMovie.poster_path}`}
+              alt={featuredMovie.title || featuredMovie.name}
+              className="w-full h-full object-cover"
+            />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/70 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-900/70 to-transparent"></div>
         </div>
-      ) : (
-        <div
-          ref={backgroundImageBox}
-          className={`w-[100%] h-[100%] flex flex-wrap flex-col relative transform translate-x-[${-currentTrendingElementPosition.current * 100}%]`}
-        >
-          {trendingList.map((ele, index) => (
-            <div
-              key={ele.id}
-              className="backgroundImage w-full h-full text-white overflow-hidden flex relative z-0"
+
+        {/* Featured Movie Info */}
+        <div className="relative z-10 container mx-auto px-6 h-full flex flex-col justify-end pb-20 animate-moveToTop">
+          <div className="max-w-2xl">
+            <h1 className="text-5xl font-bold mb-4 animate-fadeIn">
+              {featuredMovie?.title || featuredMovie?.name}
+            </h1>
+            <div className="flex items-center space-x-4 mb-6">
+              <span className="px-3 py-1 bg-blue-600 rounded-full text-sm font-semibold">
+                {featuredMovie?.media_type === 'movie' ? 'Movie' : 'TV Series'}
+              </span>
+              {featuredMovie?.release_date && (
+                <span className="text-gray-300">
+                  {new Date(featuredMovie.release_date).getFullYear()}
+                </span>
+              )}
+            </div>
+            <p className="text-gray-300 mb-8 line-clamp-3">
+              {featuredMovie.overview}
+            </p>
+            <div className="flex space-x-4">
+              <button className="px-8 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105">
+                Play Now
+              </button>
+              <button className="px-8 py-3 bg-gray-800 hover:bg-gray-700 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105">
+                + Watchlist
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      {/* Trending Now Section */}
+      <div className="py-16 bg-gray-900">
+        <div className="flex flex-col justify-center items-start px-6">
+          <div className='flex items-end gap-5 mb-8'>
+            <h2 className="specialColor w-auto font-bold  text-3xl">Trending Now</h2>
+            <button
+              className={`${trendingType === 'day' ? 'bg-blue-600 shadow-[2px_2px_2px_black] active:transform active:translate-y-[2px] active:shadow-none rounded-[5px]' : ''} px-2 py-1`}
+              onClick={() => setTrendingType('day')}
             >
-              <img
-                src={`${tmdb_image_base_url}original/${ele.backdrop_path || ele.poster_path}`}
-                className={`w-[${backgroundImageWidth}%] ml-[-${backgroundImageWidth * 2 - 100}%] transform scale-x-[-1]`}
-                alt=""
-              />
-              <img
-                src={`${tmdb_image_base_url}original/${ele.backdrop_path || ele.poster_path}`}
-                className={`w-[${backgroundImageWidth}%]`}
-                alt=""
-              />
+              By day
+            </button>
+            <button
+              className={`${trendingType === 'week' ? 'bg-blue-600 shadow-[2px_2px_2px_black] active:transform active:translate-y-[2px] active:shadow-none rounded-[5px]' : ''} px-2 py-1`}
+              onClick={() => setTrendingType('week')}
+            >
+              By week
+            </button>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-[10px]">
+            {trendingList.map((movie, idx) => (
               <div
-                className={
-                  styles.trendingListOverviewBox +
-                  ` absolute top-0 left-0 bottom-0 text-white w-[${backgroundImageWidth - (backgroundImageWidth * 2 - 100)}%] flex flex-col justify-center items-end`
-                }
+                key={movie.id}
+                className="group relative rounded-lg overflow-hidden transition-all duration-300 transform hover:scale-105 hover:z-10 cursor-pointer animate-fadeIn"
+                style={{
+                  animationDelay: `${idx / 10}s`
+                }}
+                onClick={() => {
+                  setFeaturedMovie(movie)
+                  window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                  })
+                }}
               >
-                <div
-                  ref={(el) =>
-                    (trendingListOverviewElements.current[index] = el)
-                  }
-                  className={
-                    styles.trendingListOverviewContent +
-                    " p-0 w-auto h-auto absolute top-[80px] left-[60px]"
-                  }
-                >
-                  <h1 className="text-[140%] font-bold p-0 w-full h-auto">
-                    {ele.title ||
-                      ele.original_title ||
-                      ele.name ||
-                      ele.original_name}
-                  </h1>
-                  <div className="italic text-[92%] flex items-center">
-                    <p>
-                      {ele.vote_average} ({ele.vote_count})
-                    </p>
-                    <p className="text-[150%] text-center w-[5px] h-[5px] mx-[4px] rounded-[50%] bg-white"></p>
-                    <p>{ele.media_type}</p>
-                    <p className="text-[150%] text-center w-[5px] h-[5px] mx-[4px] rounded-[50%] bg-white"></p>
-                    <p>{ele.release_date}</p>
-                  </div>
-                  <TextOverflow content={ele.overview} />
-                  <div className="flex justify-between items-center relative p-[5px]">
-                    <div className="flex justify-center">
-                      <button
-                        className={
-                          "h-auto w-auto bg-[rgb(255,255,0)] text-black p-[5px] rounded-[5px] hover:shadow-[2px_2px_2px_red]"
-                        }
-                        onClick={checkAuthUser}
-                      >
-                        Watch now!
-                      </button>
-                    </div>
-                    <div
-                      className="flex justify-center"
-                      onClick={checkAuthUser}
-                    >
-                      <IoBookmarkOutline
-                        style={{
-                          fontSize: "25px",
-                          color: "white",
-                        }}
-                      />
-                    </div>
+                <div className="aspect-w-2 aspect-h-3 animate-skeleton">
+                  <img
+                    src={`${tmdb_image_base_url}original/${movie.backdrop_path || movie.poster_path}`}
+                    alt={movie.title || movie.name}
+                    className="w-full h-full object-cover rounded-lg"
+                  />
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
+                  <h3 className="text-white font-semibold truncate">
+                    {movie.title || movie.name}
+                  </h3>
+                  <div className="flex justify-between text-sm text-gray-300 mt-1">
+                    <span>
+                      {movie.media_type === 'movie' ? 'Movie' : 'TV Series'}
+                    </span>
+                    {movie.release_date && (
+                      <span>{new Date(movie.release_date).getFullYear()}</span>
+                    )}
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      )}
-      {trendingList.length === 0 ? (
-        ""
-      ) : (
-        <div
-          className={
-            styles.defaultTrendingBox +
-            ` absolute h-[130px] bottom-[30px] left-0 right-0 px-[12px] flex gap-[${gapBetweenImages}px] items-center bg-transparent overflow-y-hidden overflow-x-scroll scroll-smooth`
-          }
-        >
-          {trendingList.map((ele, index) => (
-            <div
-              ref={(el) => (trendingListElements.current[index] = el)}
-              key={index}
-              style={
-                index === currentTrendingElementPosition.current
-                  ? {
-                      margin: "0 10px",
-                      transform: "scale(1.3)",
-                      filter: "brightness(1.5)",
-                    }
-                  : {
-                      filter: "brightness(0.7)",
-                    }
-              }
-              className={`item${index} min-w-[${slideShowImageWidth}px] h-[70%] rounded-[10px] shadow-[5px_5px_10px_black] transition-all duration-[0.5s] ease-in-out cursor-pointer flex items-center`}
-              onClick={() => handleTrendingListTransition(index)}
-            >
-              <img
-                src={`${tmdb_image_base_url}original/${ele.backdrop_path || ele.poster_path}`}
-                className="w-auto h-full rounded-[10px]"
-                alt=""
-              />
-            </div>
-          ))}
+      </div>
+
+      {/* Categories Section */}
+      <div className="py-16 bg-gray-900/50">
+        <div className="container mx-auto px-6">
+          <h2 className="text-3xl font-bold mb-8">Browse by Category</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {['Action', 'Comedy', 'Horror', 'Romance', 'Sci-Fi', 'Thriller'].map((category) => (
+              <div
+                key={category}
+                className="bg-gray-800 rounded-lg p-6 text-center hover:bg-blue-600 transition-all duration-300 cursor-pointer transform hover:scale-105"
+              >
+                <span className="font-semibold">{category}</span>
+              </div>
+            ))}
+          </div>
         </div>
-      )}
+      </div>
+
+      <Footer />
     </div>
   );
 }
-
-export default DemoPage;

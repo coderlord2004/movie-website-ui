@@ -6,7 +6,7 @@ const buildURLWithParams = (baseUrl, queryParams) => {
   return url.toString();
 };
 const fetchApi = (url, option = {}) => {
-  return fetch(url, option) // return về cả promise để async/await không bị lỗi
+  return fetch(url, option)
     .then(async (res) => {
       if (!res.ok) {
         const errorData = await res.json();

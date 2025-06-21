@@ -149,7 +149,7 @@ const Header = ({ onSearching, onReset, activeMenu }) => {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900 bg-opacity-60 backdrop-blur-sm shadow-lg border-b border-gray-800">
-      <div className="w-full mx-auto px-4 h-[50px] flex items-center justify-between">
+      <div className="w-full mx-auto px-[3px] sm:px-4 h-[50px] flex items-center justify-between">
         <div className="flex justify-center items-center space-x-8">
           <Link
             to={authUser ? "/home" : "/"}
@@ -182,7 +182,7 @@ const Header = ({ onSearching, onReset, activeMenu }) => {
         </div>
 
         {/* Search và Filter Section */}
-        <div className="flex items-center gap-x-4 relative">
+        <div className="items-center gap-x-4 relative hidden sm:flex">
           {/* Search Bar */}
           <motion.form
             onSubmit={handleSearch}
@@ -413,16 +413,16 @@ const Header = ({ onSearching, onReset, activeMenu }) => {
               </div>
             )
           ) : (
-            <div className="flex space-x-3">
+            <div className="flex sm:space-x-3 h-full">
               <Link
                 to="/login"
-                className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors"
+                className="h-full px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors whitespace-nowrap"
               >
                 Log in
               </Link>
               <Link
                 to="/signup"
-                className="px-4 py-2 text-sm font-medium bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-md hover:opacity-90 transition-opacity shadow-lg"
+                className="h-full px-4 py-2 text-sm font-medium bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-md hover:opacity-90 transition-opacity shadow-lg whitespace-nowrap"
               >
                 Sign up
               </Link>

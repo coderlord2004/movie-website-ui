@@ -100,7 +100,7 @@ function Signup() {
       <div
         className={
           styles.formSignupBox +
-          " w-auto h-auto bg-black/70 rounded-[10px] p-3 absolute top-[50%] left-[50%] transform translate-x-[-50%] translate-y-[-50%] border-[1px] border-solid border-white text-white flex justify-center"
+          " w-auto h-auto bg-black/70 rounded-[10px] p-3 absolute top-[50%] left-[50%] transform translate-x-[-50%] translate-y-[-50%] border-[1px] border-solid border-white text-white flex flex-col sm:flex-row justify-center"
         }
         onClick={addWaveAnimation}
       >

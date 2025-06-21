@@ -2,13 +2,12 @@ import React, {
   useContext,
   createContext,
   useState,
-  useEffect,
   useCallback,
 } from "react";
 
 export const AuthUserContext = createContext({
   authUser: null,
-  saveAuthUser: () => {},
+  saveAuthUser: () => { },
 });
 
 export const AuthUserProvider = ({ children }) => {

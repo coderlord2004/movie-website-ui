@@ -5,20 +5,21 @@ import React, {
   useContext,
   useCallback,
 } from "react";
-import Notification from "../components/Notification/Notification";
+import Notification from "../components/Notification.jsx";
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
+import Cookies from "js-cookie";
 
 const NotificationContext = createContext({
   isNewNotification: false,
   notification: null,
-  showNotification: () => {},
+  showNotification: () => { },
 });
 
 export const NotificationProvider = ({ children }) => {
   const [notification, setNotification] = useState([]);
   const [isNewNotification, setNewNotification] = useState(false);
-
+  const accessToken = Cookies.get('accessToken')
   const removeNotification = useCallback(
     (id) => {
       const newNotification = notification.filter((item) => item.id !== id);
@@ -45,6 +46,9 @@ export const NotificationProvider = ({ children }) => {
     const socket = new SockJS(`${import.meta.env.VITE_WEBSITE_BASE_URL}/ws`);
     const stompClient = new Client({
       webSocketFactory: () => socket,
+      connectHeaders: {
+        Authorization: `Bearer ${accessToken}`,
+      },
       onConnect: () => {
         console.log("Connected");
         stompClient.subscribe("/topic/new-movie", (message) => {
@@ -64,7 +68,7 @@ export const NotificationProvider = ({ children }) => {
     return () => {
       stompClient.deactivate();
     };
-  }, [showNotification]);
+  }, [showNotification, accessToken]);
 
   return (
     <NotificationContext.Provider
@@ -73,15 +77,15 @@ export const NotificationProvider = ({ children }) => {
       {children}
       {notification.length !== 0
         ? notification.map((item, index) => (
-            <Notification
-              key={item.id}
-              type={item.type}
-              message={item.message}
-              order={index}
-              onClose={removeNotification}
-              redirectUrl={item.redirectUrl}
-            />
-          ))
+          <Notification
+            key={item.id}
+            type={item.type}
+            message={item.message}
+            order={index}
+            onClose={removeNotification}
+            redirectUrl={item.redirectUrl}
+          />
+        ))
         : null}
     </NotificationContext.Provider>
   );
