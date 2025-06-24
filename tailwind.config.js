@@ -1,3 +1,5 @@
+const { opacity } = require('@cloudinary/url-gen/actions/adjust');
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
@@ -99,6 +101,10 @@ module.exports = {
           '100%': {
             'background-position': '200% 0'
           }
+        },
+        'cursor-blink': {
+          '0%, 50%': { opacity: '1' },
+          '50.01%, 100%': { opacity: '0' },
         }
 
       },
@@ -112,7 +118,8 @@ module.exports = {
         fadeOut: 'fadeOut 0.5s ease-in-out',
         notify: 'notify 0.5s ease-in-out',
         ring: 'ring 1s linear infinite',
-        shimmer: 'shimmer 1.5s infinite'
+        shimmer: 'shimmer 1.5s infinite',
+        cursor: 'cursor-blink 1s step-start infinite'
       }
     },
   },

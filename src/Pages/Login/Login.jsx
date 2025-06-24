@@ -6,7 +6,6 @@ import SpinAnimation from "../../components/LoadingAnimation/SpinAnimation/SpinA
 import { useNotification } from "../../context/NotificationContext.jsx";
 import InputBox from "../../components/InputBox/InputBox";
 import { useForm } from "react-hook-form";
-import { useUserContext } from "../../context/AuthUserContext.jsx";
 import Cookies from "js-cookie";
 
 const website_base_url = import.meta.env.VITE_WEBSITE_BASE_URL;
