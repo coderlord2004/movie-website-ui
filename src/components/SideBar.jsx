@@ -13,7 +13,7 @@ function SideBar({ onUpdateActiveMenu, menuState }) {
 
   return (
     <div
-      className={`w-[230px] h-full bg-gradient-to-b from-[#0f0f0f] to-[#1a1a1a] fixed top-[50px] z-50 shadow-lg flex flex-col py-4 px-2 overflow-y-auto ${isOpenSideBar ? "left-0" : "left-[-100%]"} sm:left-0 animate-moveToRight transition-all duration-300 ease-in-out`}
+      className={`w-[20%] h-full bg-gradient-to-b from-[#0f0f0f] to-[#1a1a1a] fixed top-[50px] z-50 shadow-lg flex flex-col py-4 px-2 overflow-y-auto ${isOpenSideBar ? "left-0" : "left-[-100%]"} sm:left-0 animate-moveToRight transition-all duration-300 ease-in-out`}
     >
       <div
         className={`fixed top-[50px] left-0 ${isOpenSideBar ? "hidden" : "block"} sm:hidden text-white text-[30px] cursor-pointer hover:scale-[1.2] transition-all duration-200 ease-linear`}

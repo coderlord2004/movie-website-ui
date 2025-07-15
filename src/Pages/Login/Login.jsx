@@ -159,6 +159,7 @@ function Login() {
           </div>
           <button
             type="submit"
+            disabled={loading}
             className="globalButtonStyle w-full h-[30px] outline-none bg-blue-500 mt-[20px] flex justify-center items-center shadow-[2px_2px_2px_grey] relative"
           >
             {loading ? (

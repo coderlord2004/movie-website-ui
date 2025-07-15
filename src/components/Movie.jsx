@@ -1,10 +1,8 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import Bookmark from "../Bookmark";
+import Bookmark from "./Bookmark";
 
 const image_base_url = import.meta.env.VITE_TMDB_BASE_IMAGE_URL;
-const tmdb_base_url = import.meta.env.VITE_TMDB_BASE_URL;
-const api_key = import.meta.env.VITE_API_KEY;
 
 function Movie({ id, movieData, belongTo }) {
   const [isError, setError] = useState(false);

@@ -23,9 +23,9 @@ export default function TypeWriter({ content, typeSpeed }) {
   }, [content, typeSpeed]);
 
   return (
-    <div className="relative mb-4">
+    <div className="relative mb-[10px]">
       <p
-        className="specialColor h-auto relative font-bold text-5xl"
+        className="specialColor max-w-[70%] h-auto relative font-bold text-5xl"
         ref={textContainer}
       ></p>
     </div>

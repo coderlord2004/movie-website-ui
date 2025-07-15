@@ -1,8 +1,8 @@
 import React from "react";
-import SpecialMovie from "../components/SpecialMovie";
-import Movie from "./Movie/Movie";
+import SlideShowTopMovie from "../components/SlideShowTopMovie";
+import Movie from "./Movie";
 import PageTransition from "./PageTransition";
-import { cinemaMenu, cinemaMap } from "../constants/menu";
+import { cinemaMap } from "../constants/menu";
 export default function MovieList({ movies, menuState, onSetMenuState }) {
   if (
     movies &&
@@ -26,17 +26,8 @@ export default function MovieList({ movies, menuState, onSetMenuState }) {
       <div className="menuOnMobile absolute top-0 left-0 text-white w-[20px] h-[20px] text-center block sm:hidden">
         X
       </div>
-      <div className="w-full h-[300px] bg-slate-800 rounded-[10px]">
-        {movies && (
-          <SpecialMovie
-            id={"movie0"}
-            movieData={movies.results[0]}
-            typeDetail={
-              menuState.cinemaType ? menuState.cinemaType.toLowerCase() : ""
-            }
-            belongTo={movies.belong_to}
-          />
-        )}
+      <div className="w-full h-[60vh] bg-slate-800 rounded-[10px]">
+        {movies && <SlideShowTopMovie />}
       </div>
 
       {cinemaMap[menuState.activeMenu] ? (
@@ -68,16 +59,14 @@ export default function MovieList({ movies, menuState, onSetMenuState }) {
       )}
 
       {movies &&
-        movies.results
-          .slice(1)
-          .map((data, index) => (
-            <Movie
-              key={index}
-              id={index}
-              movieData={data}
-              belongTo={movies.belong_to}
-            />
-          ))}
+        movies.results.map((data, index) => (
+          <Movie
+            key={index}
+            id={index}
+            movieData={data}
+            belongTo={movies.belong_to}
+          />
+        ))}
 
       <PageTransition />
     </div>

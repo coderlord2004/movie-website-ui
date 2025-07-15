@@ -213,7 +213,7 @@ function Home() {
         <SideBar onUpdateActiveMenu={updateActiveMenu} menuState={menuState} />
 
         <div
-          className="movie-list-box flex w-full sm:w-[calc(100%-230px)] sm:ml-[230px] min-h-screen rounded-[10px] box-border bg-gradient-to-b px-[3px] from-[#0f0f0f] to-[#1a1a1a] text-white transition-all duration-400 ease-linear relative"
+          className="movie-list-box flex w-full sm:w-[80%] sm:ml-[20%] min-h-screen rounded-[10px] box-border bg-gradient-to-b px-[3px] from-[#0f0f0f] to-[#1a1a1a] text-white transition-all duration-400 ease-linear relative"
           ref={movieListBox}
         >
           {menuState.activeMenu === "Playlist" ? (
